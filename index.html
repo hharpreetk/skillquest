@@ -530,7 +530,7 @@ function toggle(id,nu){
   const l1=lvl();
   if(l1>l0){const g=[...GEAR,...BGS].filter(x=>x.l>l0&&x.l<=l1);POP.push({lv:1,k:'LEVEL UP',em:stage().e,t:'Level '+l1+' · '+stage().n,sub:g.length?'New unlocks: '+g.map(x=>x.n).join(', '):'Keep going!'})}
   else if(l1<l0)m.push('⬇️ Level '+l1);
-  save();render();toast(m.join('  •  '));sfx(S.done[d][id]?'check':'undo');showPop();if(!nu)showUndo(S.done[d][id]?'Task completed':'Task unchecked',()=>toggle(id,true));
+  save();render();toast(m.join('  •  '));sfx(S.done[d][id]?'check':'undo');showPop();
   if(S.done[d][id]){const n=Object.keys(S.done[d]).length;ping('done','just completed the task "'+task.text+'" ('+(S.tracks.find(k=>k.id===task.tr)||{}).name+'). They have finished '+n+' task(s) today. React like a proud friend.',{force:n===1})}
 }
 function addSkill(){
