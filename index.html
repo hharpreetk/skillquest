@@ -131,6 +131,31 @@ nav button.on{background:var(--brand);color:#fff}
 .cal b{font-size:.75rem;color:var(--mute)}.day{aspect-ratio:1;border-radius:10px;display:grid;place-items:center;font-size:.85rem;position:relative;background:var(--bg)}
 .day.l1{background:#c8e6c0;color:#143}.day.l2{background:#8fd17a;color:#143}.day.l3{background:#4fb03a;color:#fff}.day.l4{background:#26890c;color:#fff}
 .day.today{outline:3px solid var(--yellow)}.day i{position:absolute;top:-5px;right:-3px;font-size:.8rem;font-style:normal}
+#fab{position:fixed;right:14px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:7;width:56px;height:56px;border-radius:50%;border:0;background:var(--green);color:#fff;font-size:1.6rem;box-shadow:0 5px 0 rgba(0,0,0,.28);cursor:pointer}
+#fabn{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;border-radius:99px;font:800 .75rem 'Baloo 2',sans-serif;min-width:20px;height:20px;line-height:20px}
+#fabn:empty{display:none}
+#bub{position:fixed;right:14px;bottom:calc(148px + env(safe-area-inset-bottom,0px));max-width:min(280px,75vw);background:var(--card);border:2px solid var(--line);border-bottom-width:4px;border-radius:16px;padding:8px 12px;z-index:7;display:none;font-size:.9rem;cursor:pointer}
+#chat{position:fixed;inset:0;z-index:28;background:var(--bg);display:none;flex-direction:column;height:100dvh}
+#chat.on{display:flex}
+.ch-top{background:var(--brand);color:#fff;padding:calc(8px + env(safe-area-inset-top,0px)) 10px 8px;display:flex;gap:6px;align-items:center}
+.ch-top>button{background:rgba(255,255,255,.16);border:0;border-radius:12px;color:#fff;min-width:42px;min-height:40px}
+.ptabs{display:flex;gap:6px;flex:1}.ptab{flex:1;min-height:40px;border:0;border-radius:12px;background:rgba(255,255,255,.14);color:#fff;font-family:'Baloo 2';font-weight:700}
+.ptab.on{background:var(--yellow);color:#3a2a00}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--red)}
+#cset{display:none;padding:10px;background:var(--card);border-bottom:2px solid var(--line);max-height:55vh;overflow:auto}
+#cset textarea{width:100%;border-radius:14px;border:2px solid var(--line);background:var(--bg);padding:8px 12px;margin:4px 0 8px}
+#cset input{width:100%;margin:4px 0 8px}
+.fo{padding:6px 10px;background:var(--card);border-bottom:2px solid var(--line)}.fo input{width:100%;min-height:38px;font-size:.9rem}
+.msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.mg{max-width:82%;padding:9px 13px;border-radius:18px;word-break:break-word;white-space:pre-wrap}
+.mg.me{align-self:flex-end;background:var(--brand);color:#fff;border-bottom-right-radius:4px}
+.mg.ai{align-self:flex-start;background:var(--card);border:2px solid var(--line);border-bottom-left-radius:4px}
+.mg.sys{align-self:center;font-size:.8rem;color:var(--mute);text-align:center}
+.dots span{animation:bl 1s infinite;display:inline-block;margin:0 1px}.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes bl{50%{opacity:.2}}
+.cin{display:flex;gap:8px;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));border-top:2px solid var(--line);background:var(--card)}
+#undo{position:fixed;left:14px;max-width:calc(100vw - 100px);bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateY(20px);background:var(--ink);color:var(--bg);padding:6px 6px 6px 16px;border-radius:99px;font-weight:800;opacity:0;pointer-events:none;transition:.3s;z-index:21;display:flex;gap:10px;align-items:center}
+#undo.s{opacity:1;pointer-events:auto;transform:none}
+#undo button{background:var(--yellow);color:#3a2a00;border:0;border-radius:99px;padding:6px 14px;font-weight:800;min-height:36px}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -154,10 +179,10 @@ nav button.on{background:var(--brand);color:#fff}
   <section class="tab" id="t-hero"></section>
   <section class="tab" id="t-vault"></section>
   <section class="tab" id="t-more"></section>
-  <section class="tab" id="t-tarot"></section>
   <section class="tab" id="t-jobs"></section>
   <section class="tab" id="t-proj"></section>
   <section class="tab" id="t-cal"></section>
+  <section class="tab" id="t-set"></section>
 </div>
 
 <nav><div class="in">
@@ -167,7 +192,19 @@ nav button.on{background:var(--brand);color:#fff}
   <button data-t="more"><span>✨</span>More</button>
   <button data-t="vault"><span>🎁</span>Vault</button>
 </div></nav>
-<div id="ask" role="alertdialog"></div><canvas id="cf"></canvas><div id="pop" role="dialog" aria-live="polite"></div>
+<div id="ask" role="alertdialog"></div><button id="fab" data-act="chat" aria-label="Open chat">💬<span id="fabn"></span></button>
+<div id="bub" data-act="chat"></div>
+<div id="chat" role="dialog" aria-label="Chat with your accountability partners">
+ <div class="ch-top"><div id="ctabs" class="ptabs"></div><button data-act="cset" aria-label="Chat settings">⚙️</button><button data-act="chatx" aria-label="Close chat">✕</button></div>
+ <div id="cset"><b>Name</b><input id="sn" maxlength="20"><b>Personality</b><textarea id="sv" rows="3" maxlength="300"></textarea><b>API key (only needed outside Claude)</b><input id="sk" type="password" autocomplete="off" placeholder="sk-ant-...">
+  <div class="xp" style="margin-bottom:8px">The key stays on this device only and is not included in backups. Messages and a snapshot of your progress are sent to Anthropic to write replies, and usage is billed to your API account. Set a spend limit in the Anthropic console.</div>
+  <div class="set"><button class="btn" data-act="csave">Save</button><button class="btn r" data-act="cclr">Clear this chat</button></div></div>
+ <div class="fo"><input id="cfo" maxlength="80" placeholder="Right now I am working on..."></div>
+ <div class="msgs" id="cm"></div>
+ <div class="cin"><input id="ci" maxlength="500" placeholder="Message" autocomplete="off"><button class="btn" data-act="send">Send</button></div>
+</div>
+<canvas id="cf"></canvas><div id="pop" role="dialog" aria-live="polite"></div>
+<div id="undo"></div>
 <div id="toast" role="status"></div>
 
 <script>
@@ -208,7 +245,7 @@ const stage=()=>[...STAGES].reverse().find(x=>lvl()>=x.l);
 const cnt=(s,k)=>s.counts[k]||0, tot=s=>Object.values(s.counts).reduce((a,b)=>a+b,0);
 
 let S=load();
-function fresh(){return{stake:{mode:'serious',usd:0},owed:0,misses:0,pw:null,nag:null,projects:[],jobs:[],tarot:null,gone:[],tracks:DEFTRACKS.map(t=>({...t})),equip:{head:null,face:null,side:null,bg:'sun'},xp:0,streak:0,best:0,last:null,prev:null,offset:0,done:{},counts:{},badges:{},
+function fresh(){return{apps:[],jobGoal:{n:10,weeks:1,anchor:null,settled:null},appMiss:0,chat:{partners:[{id:'maya',name:'Maya',vibe:'warm, upbeat best friend who genuinely believes in the user, celebrates small wins and nudges gently'},{id:'dev',name:'Quinn',vibe:'straight-talking older-brother coach with dry humor, high standards, calls out excuses kindly'}],msgs:{maya:[],dev:[]},unread:{maya:0,dev:0},active:'maya',focus:'',focusAt:0,last:0,lastOpen:0,next:0},stake:{mode:'serious',usd:0},owed:0,misses:0,pw:null,nag:null,projects:[],jobs:[],gone:[],tracks:DEFTRACKS.map(t=>({...t})),equip:{head:null,face:null,side:null,bg:'sun'},xp:0,streak:0,best:0,last:null,prev:null,offset:0,done:{},counts:{},badges:{},
  tasks:[{id:'t1',tr:'excel',text:'Practice 5 formulas (XLOOKUP, SUMIFS)'},{id:'t2',tr:'sql',text:'Solve 1 JOIN exercise'},
   {id:'t3',tr:'pbi',text:'Build 1 visual in a report'},{id:'t4',tr:'python',text:'Clean a dataset with pandas'},{id:'t5',tr:'r',text:'Plot with ggplot2'}],
  rewards:[{id:'r1',name:'Guilt-free break',type:'streak',target:3,claimed:false},
@@ -260,67 +297,18 @@ const jKs=j=>j.skills.map(id=>allK().find(k=>k.id===id)).filter(Boolean);
 const jPct=j=>{const ks=jKs(j);return ks.length?ks.reduce((a,k)=>a+kPct(k),0)/ks.length:0};
 const hs=t=>{let h=0;for(const c of t)h=(h*31+c.charCodeAt(0))>>>0;return h};
 let JT='',JSEL=[],TFLIP=false;
-const CARDS=[['sun','thriving','XIX','☀️','The Sun','Radiance · Success · Vitality','Light pours over the path you have been walking. What you tended is ready to be seen. Keep your pace.'],
-['star','thriving','XVII','⭐','The Star','Hope · Renewal · Calm','Hope returns in a steady, shining form. The effort you poured out is quietly refilling the well. Keep going.'],
-['chariot','thriving','VII','🏇','The Chariot','Momentum · Will · Victory','Momentum is yours. Hold the reins steady and the road itself will rise to meet you.'],
-['strength','thriving','VIII','🦁','Strength','Patience · Courage · Mastery','Gentle persistence is mastering what force never could. Your patience is becoming power.'],
-['world','thriving','XXI','🌍','The World','Completion · Reward · Wholeness','A cycle bends toward completion. Doors tied to your craft are beginning to open.'],
-['wheel','thriving','X','🎡','Wheel of Fortune','Luck · Turning Point · Fate','The wheel turns in your favour. Opportunity gathers around those who keep showing up.'],
-['ace','thriving','Ace','🪙','Ace of Pentacles','Seed · Prosperity · Opportunity','A seed of real, tangible reward is placed in your hand. Water it daily and it will grow.'],
-['temp','steady','XIV','🏺','Temperance','Balance · Patience · Blending','Small, patient pours blend into something lasting. Keep your days balanced and the mixture will turn to gold.'],
-['hermit','steady','IX','🕯️','The Hermit','Study · Insight · Inner Light','Quiet study by lamplight. The work looks slow from outside, but you are finding your own way.'],
-['empress','steady','III','🌿','The Empress','Growth · Abundance · Nurture','Growth happens beneath the surface. Tend your garden and it will answer.'],
-['justice','steady','XI','⚖️','Justice','Cause · Effect · Fairness','What you give returns in measure. Steady hands make a fair reckoning.'],
-['hiero','steady','V','📜','The Hierophant','Method · Tradition · Learning','Practice holds you. Follow the method; mastery lives in repetition.'],
-['page','steady','Page','📖','Page of Pentacles','Study · Craft · Diligence','The devoted student turns the page again. Curiosity, practised daily, becomes craft.'],
-['tower','stalled','XVI','🗼','The Tower','Cracks · Upheaval · Truth','Walls left unmended are beginning to crack. It is better to rebuild by choice than to wait for the fall.'],
-['hanged','stalled','XII','🙃','The Hanged Man','Pause · Stuck · Surrender','You hover in place, waiting for a sign. The sign is the first small step.'],
-['moon','stalled','XVIII','🌙','The Moon','Fog · Illusion · Avoidance','The fog is lifting, yet you linger in it. What you avoid is smaller than the shadow it casts.'],
-['chariotr','stalled','VII','🏇','The Chariot','Lost reins · Drift · Stalling','The reins have slipped. Direction without motion goes nowhere. Choose one path and begin.'],
-['starr','stalled','XVII','⭐','The Star','Dimmed light · Doubt','Your light flickers, not from lack of gift but from lack of tending. Relight it with one small act.'],
-['hermitr','stalled','IX','🕯️','The Hermit','Isolation · Withdrawal','Solitude has drifted into hiding. The lamp is still lit, but you have stopped walking toward it.'],
-['pager','stalled','Page','📖','Page of Pentacles','Unfinished · Neglect','Your studies sit unopened. A book unread teaches nothing. Open it once today.'],
-['fool','fresh','0','🃏','The Fool','Beginnings · Trust · Leap','A new road begins at your feet. Step lightly, trust the journey, and let curiosity lead.'],
-['magician','fresh','I','✨','The Magician','Skill · Will · Potential','Every tool you need is already on your table. Begin, and the craft will answer.'],
-['wands','fresh','Ace','🔥','Ace of Wands','Spark · Ambition · Drive','A spark of purpose ignites. Shelter it and it becomes a fire.']].map(x=>({id:x[0],s:x[1],r:x[2],e:x[3],n:x[4],k:x[5],m:x[6]}));
-function progState(){const on=i=>{const dn=S.done[key(-i)];return !!(dn&&Object.keys(dn).length)};
-  let act=0;for(let i=1;i<=7;i++)if(on(i))act++;
-  if(!Object.keys(S.done).some(k=>k<key(0)&&Object.keys(S.done[k]).length))return'fresh';
-  if(act>=5||(on(1)&&on(2)&&on(3)))return'thriving';if(act>=3)return'steady';return'stalled'}
-function tarotHint(st){
-  const jobs=S.jobs.filter(j=>!j.ready).sort((a,b)=>jPct(b)-jPct(a)),j=jobs[0];let k;
-  if(j)k=jKs(j).filter(x=>S.tracks.includes(x)&&!kMast(x)).sort((a,b)=>kPct(a)-kPct(b))[0];
-  if(!k)k=S.tracks.filter(x=>!kMast(x)).sort((a,b)=>cnt(S,a.id)-cnt(S,b.id))[0];
-  const top=[...S.tracks].sort((a,b)=>cnt(S,b.id)-cnt(S,a.id))[0];
-  if(st==='fresh')return 'A blank spread lies before you. Choose a skill, complete one small task, and the cards will begin to read your path.';
-  if(st==='thriving')return (top?'The thread of '+top.em+' '+top.name+' glows brightest in this spread. ':'')+(j?'The road toward '+j.title+' is lighting up'+(k?'; '+k.name+' is the lantern to carry next.':'. Stay the course.'):'Name a career path and the cards will speak to it.');
-  if(st==='steady')return (j?'Between the lines, '+j.title+' stirs. ':'')+(k?k.name+' waits at the edge of the map. A little more attention there and the pattern will shift.':'The pattern is forming. Keep your hands busy.');
-  return 'The spread hints at something left untended'+(k?': '+k.name+' sits quiet at the edge of the table':'')+'. A single small act would turn this card.'
-}
-function pullCard(){
-  const st=progState(),pool=CARDS.filter(c=>c.s===st),c=pool[hs(key(0)+st)%pool.length];
-  S.tarot={date:key(0),card:c.id,rev:st==='stalled',state:st,hint:tarotHint(st)};TFLIP=true;save();render();sfx('chime')
-}
-function tarotHTML(){
-  const t=S.tarot,ok=t&&t.date===key(0),c=ok&&CARDS.find(x=>x.id===t.card);
-  let h=BACK+'<h2 style="margin:10px 0 4px">🔮 Daily Tarot</h2><p class="note">Your reading looks at your previous 7 days, never today, so checking or unchecking tasks cannot change it. For fun and motivation only.</p>';
-  if(!c)return h+'<div class="tback">🔮</div><button class="btn y" style="width:100%" data-act="pull">Pull today\'s card</button>';
-  const f=TFLIP;TFLIP=false;
-  return h+'<div class="tcard'+(t.rev?' rev':'')+(f?' flip':'')+'"><div class="tn">'+c.r+'</div><div class="te">'+c.e+'</div><div><div class="tt">'+c.n+(t.rev?' (Reversed)':'')+'</div><div class="tk">'+c.k+'</div></div></div>'+
-   '<div class="card"><h3>The reading</h3><p>'+esc(c.m)+'</p><h3>Whispers of your path</h3><p>'+esc(t.hint)+'</p><div class="xp">One card per day. Come back tomorrow for a new spread.</div></div>'
-}
 function moreHTML(){
-  const t=S.tarot,c=t&&t.date===key(0)&&CARDS.find(x=>x.id===t.card),rd=S.jobs.filter(j=>j.ready).length;
+  const rd=S.jobs.filter(j=>j.ready).length;
   const m=(g,e,n,d)=>'<div class="card menu" data-t="'+g+'"><div class="em">'+e+'</div><div><b>'+n+'</b><div class="xp">'+d+'</div></div></div>';
-  return '<h2 style="margin-bottom:10px">More</h2>'+m('tarot','🔮','Daily Tarot',c?'Today: '+c.n+(t.rev?' (Reversed)':''):'Pull your card for today')+
-   m('cal','📅','Calendar','Your month at a glance')+
+  return '<h2 style="margin-bottom:10px">More</h2>'+   m('cal','📅','Calendar','Your month at a glance')+
    m('proj','🛠️','Projects',(shipped(wkKeys(0))?'✅ Shipped this week':'🎯 Ship 1 this week')+' · '+S.projects.filter(p=>p.status==='shipped').length+' total')+
    m('jobs','💼','Career Goals',S.jobs.length?S.jobs.length+' goals · '+rd+' ready':'Link skills to dream jobs')+
-   m('badges','🏅','Badges & Settings',Object.keys(S.badges).length+' badges earned · backup & reset')
+   m('badges','🏅','Badges',Object.keys(S.badges).length+' earned')+
+   m('set','⚙️','Settings','Backup, restore skills, reset')
 }
 function jobsHTML(){
   const chips=(sel,att)=>S.tracks.map(k=>'<button class="chip'+(sel(k)?' on':'')+'" '+att+'="'+k.id+'">'+k.em+' '+esc(k.name)+'</button>').join('');
-  return BACK+'<h2 style="margin:10px 0 4px">💼 Career Goals</h2><p class="note">Create a job, link the skill cards it needs, and watch your readiness grow. A skill counts as mastered when you reach its mastery goal on the Today tab (or mark it done yourself).</p>'+
+  return BACK+'<h2 style="margin:10px 0 4px">💼 Career Goals</h2>'+appsHTML()+'<p class="note">Create a job, link the skill cards it needs, and watch your readiness grow. A skill counts as mastered when you reach its mastery goal on the Today tab (or mark it done yourself).</p>'+
    (S.jobs.length?S.jobs.map(j=>{const pc=Math.round(jPct(j)*100);return '<div class="card"><div class="ch"><h3>'+(j.ready?'🎓 ':'')+esc(j.title)+'</h3><span class="tag'+(j.ready?' ok':'')+'">'+(j.ready?'Qualified':pc+'%')+'</span><button class="x" data-dj="'+j.id+'" aria-label="Delete job">✕</button></div>'+
     '<div class="bar lt"><i style="width:'+pc+'%;background:'+(j.ready?'var(--green)':'var(--blue)')+'"></i></div><div class="xp" style="margin-top:6px">Tap a skill to add or remove it from this job</div><div class="chips">'+
     S.tracks.map(k=>{const l=j.skills.includes(k.id);return '<button class="chip'+(l?(kMast(k)?' on':''):' dim')+'" data-jl="'+j.id+'|'+k.id+'">'+k.em+' '+esc(k.name)+(l?(kMast(k)?' ✓':' '+Math.round(kPct(k)*100)+'%'):'')+'</button>'}).join('')+'</div></div>'}).join(''):'<div class="empty">No career goals yet. Example: Data Analyst needs Excel, SQL and Power BI.</div>')+
@@ -333,7 +321,7 @@ function askYes(){$('ask').classList.remove('on');const f=ASKFN;ASKFN=null;f&&f(
 function askNo(){$('ask').classList.remove('on');ASKFN=null}
 const PXP=200,PEN={off:0,gentle:0,serious:300,hardcore:1000};
 const fmt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-function go(t){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(['tarot','jobs','badges','proj','cal'].includes(t)?'more':t)));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='t-'+t));window.scrollTo(0,0)}
+function go(t){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(['jobs','badges','proj','cal','set'].includes(t)?'more':t)));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='t-'+t));window.scrollTo(0,0)}
 function saveUsd(){S.stake.usd=Math.max(0,parseFloat($('su').value)||0);save();render();toast('Penalty saved')}
 function stakesHTML(){
   const m=[['off','Off'],['gentle','Reminders only'],['serious','−300 XP'],['hardcore','−1000 XP + streak reset']];
@@ -352,7 +340,7 @@ function settle(){
     const lose=Math.min(S.xp,PEN[S.stake.mode]*missed),usd=(S.stake.usd||0)*missed;
     S.xp-=lose;S.misses+=missed;S.owed+=usd;if(S.stake.mode==='hardcore'){S.streak=0;S.prev=null}
     sync(1);
-    POP.push({k:'WEEK MISSED',em:'💀',t:missed>1?missed+' weeks without a shipped project':'No project shipped last week',sub:(lose?'-'+lose+' XP. ':'')+(usd?'You owe $'+usd+' to your penalty jar. ':'')+(S.stake.mode==='hardcore'?'Streak reset. ':'')+'This week is a fresh start. Ship something.'})}
+    ping('miss','missed their weekly project goal last week and lost XP. Be honest but kind and ask what got in the way.',{force:true});POP.push({k:'WEEK MISSED',em:'💀',t:missed>1?missed+' weeks without a shipped project':'No project shipped last week',sub:(lose?'-'+lose+' XP. ':'')+(usd?'You owe $'+usd+' to your penalty jar. ':'')+(S.stake.mode==='hardcore'?'Streak reset. ':'')+'This week is a fresh start. Ship something.'})}
   save()
 }
 function nag(){
@@ -373,7 +361,7 @@ const shipped=ks=>S.projects.filter(p=>p.status==='shipped'&&ks.includes(p.date)
 function projStreak(){let n=0,w=shipped(wkKeys(0))>0?0:1;while(w<80&&shipped(wkKeys(w))>0){n++;w++}return n}
 let PSEL=[],PT='',PL='',PD='';
 function addProj(){const t=$('pn').value.trim();if(!t){toast('Give the project a title');return}
-  S.projects.push({id:'p'+Date.now(),title:t.slice(0,60),link:$('pl').value.trim().slice(0,200),due:$('pd').value,skills:[...PSEL],status:'building',date:null});PT='';PL='';PD='';PSEL=[];sync();save();render();toast('🔨 Project added')}
+  S.projects.push({id:'p'+Date.now(),title:t.slice(0,60),link:$('pl').value.trim().slice(0,200),due:$('pd').value,skills:[...PSEL],status:'building',date:null});ping('proj','added a new portfolio project: "'+t+'". Ask when they plan to ship it.',{force:true});PT='';PL='';PD='';PSEL=[];sync();save();render();toast('🔨 Project added')}
 function shipProject(id){const p=S.projects.find(x=>x.id===id);if(!p)return;
   if(p.status!=='shipped'){ask('Ship "'+esc(p.title)+'"?','Only ship it when it is really done. You earn +'+PXP+' XP and it counts for this week. You can undo it later.','Yes, ship it',()=>doShip(id),'Not yet');return}
   doShip(id)}
@@ -382,13 +370,13 @@ function doShip(id){const p=S.projects.find(x=>x.id===id);if(!p)return;const l0=
   else{p.status='shipped';p.date=key(0);S.xp+=PXP;POP.push({k:'PROJECT SHIPPED',em:'🚀',t:p.title,sub:'+'+PXP+' XP for your portfolio!'})}
   const m=sync(1),l1=lvl();
   if(l1>l0){const g=[...GEAR,...BGS].filter(x=>x.l>l0&&x.l<=l1);POP.push({lv:1,k:'LEVEL UP',em:stage().e,t:'Level '+l1+' · '+stage().n,sub:g.length?'New unlocks: '+g.map(x=>x.n).join(', '):'Keep going!'})}
-  save();render();if(m.length)toast(m.join('  •  '));sfx(p.status==='shipped'?'check':'undo');showPop()}
+  save();render();if(m.length)toast(m.join('  •  '));sfx(p.status==='shipped'?'check':'undo');showPop();if(p.status==='shipped')ping('ship','shipped their portfolio project "'+p.title+'". Celebrate with them.',{force:true})}
 function projHTML(){
   const done=shipped(wkKeys(0))>0,st=projStreak();
   return BACK+'<h2 style="margin:10px 0 4px">🛠️ Projects</h2><p class="note">Projects are one-off pieces for your portfolio, while tasks are daily habits. Ship at least one project every week.</p>'+
    '<div class="card" style="text-align:center"><div style="font-size:2.6rem">'+(done?'✅':'🎯')+'</div><b>'+(done?'Weekly project done!':'Ship 1 project this week')+'</b><div class="xp">🔥 '+st+'-week project streak · +'+PXP+' XP per shipped project</div></div>'+
-   stakesHTML()+(S.projects.length?S.projects.map(p=>{const sh=p.status==='shipped',ks=p.skills.map(id=>allK().find(k=>k.id===id)).filter(Boolean);
-    return '<div class="card"><div class="ch"><h3>'+(sh?'🚀 ':'🔨 ')+esc(p.title)+'</h3><span class="tag'+(sh?' ok':'')+'">'+(sh?'Shipped':'Building')+'</span><button class="x" data-dp="'+p.id+'" aria-label="Delete project">✕</button></div>'+
+   stakesHTML()+(S.projects.length?S.projects.map(p=>{if(EP===p.id)return projEditHTML(p);const sh=p.status==='shipped',ks=p.skills.map(id=>allK().find(k=>k.id===id)).filter(Boolean);
+    return '<div class="card"><div class="ch"><h3>'+(sh?'🚀 ':'🔨 ')+esc(p.title)+'</h3><span class="tag'+(sh?' ok':'')+'">'+(sh?'Shipped':'Building')+'</span><button class="x" data-ep="'+p.id+'" aria-label="Edit project">✎</button><button class="x" data-dp="'+p.id+'" aria-label="Delete project">✕</button></div>'+
      (ks.length?'<div class="chips">'+ks.map(k=>'<span class="tag">'+k.em+' '+esc(k.name)+'</span>').join('')+'</div>':'')+(p.due?'<div class="xp" style="margin-bottom:8px;'+(!sh&&p.due<key(0)?'color:var(--red)':'')+'">📅 Due '+p.due+(!sh&&p.due<key(0)?' (overdue)':'')+'</div>':'')+
      (/^https?:\/\//.test(p.link)?'<div class="xp" style="margin-bottom:8px"><a href="'+esc(p.link)+'" target="_blank" rel="noopener" style="color:var(--blue)">'+esc(p.link)+'</a></div>':'')+
      '<button class="btn'+(sh?'':' y')+'" style="width:100%" data-ship="'+p.id+'">'+(sh?'Undo shipped':'Mark as shipped 🚀')+'</button></div>'}).join(''):'<div class="empty">No projects yet. Add your first portfolio piece below.</div>')+
@@ -403,6 +391,119 @@ function calHTML(){
   const sp=S.projects.filter(p=>p.status==='shipped'&&p.date&&p.date.slice(0,7)===pre).length;
   return BACK+'<h2 style="margin:10px 0">📅 Calendar</h2><div class="card"><div class="ch"><button class="chip" data-cm="-1" aria-label="Previous month">‹</button><h3 style="text-align:center">'+f.toLocaleString('en',{month:'long',year:'numeric'})+'</h3><button class="chip" data-cm="1" aria-label="Next month">›</button></div><div class="cal">'+['M','T','W','T','F','S','S'].map(x=>'<b>'+x+'</b>').join('')+c+'</div><div class="xp">Active days: '+act+' · Projects shipped: '+sp+' · Darker green means more tasks done. 🚀 marks a shipped project.</div></div>'
 }
+let AIMODE=typeof claude!=='undefined'?'claude':'key',CSET=false,BT;const TYP={};
+const CANNED={task:"ok, when are you planning to do that one?",done:"nice, one more down. proud of you.",ship:"you shipped it!! that is how a portfolio gets built.",proj:"good one. when are you planning to ship it?",miss:"rough week for projects. what got in the way?",app:"logged. nice, how many more to go this week?",appmiss:"the application goal slipped. what got in the way?",open:"hey, how is today going so far?"};
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+function ctx(){const dn=S.done[key(0)]||{},left=7-(new Date(Date.now()+S.offset*864e5).getDay()+6)%7;let act=0;for(let i=0;i<7;i++){const x=S.done[key(-i)];if(x&&Object.keys(x).length)act++}
+  return{time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),level:lvl(),character:stage().n,xp:S.xp,streak:S.streak,bestStreak:S.best,activeDaysLast7:act,
+   tasksToday:S.tasks.map(t=>({skill:(S.tracks.find(k=>k.id===t.tr)||{}).name,task:t.text,done:!!dn[t.id]})),
+   projectThisWeek:{shipped:shipped(wkKeys(0))>0,daysLeftInWeek:left,inProgress:S.projects.filter(p=>p.status==='building').map(p=>({title:p.title,due:p.due||null}))},
+   weeklyStakes:S.stake.mode,missedWeeks:S.misses,careerGoals:S.jobs.map(j=>({title:j.title,percent:Math.round(jPct(j)*100)})),
+   jobSearch:{applicationsThisPeriod:appsIn(periodKeys()),target:S.jobGoal.n,periodWeeks:S.jobGoal.weeks,daysLeftInPeriod:periodLeft(),recent:S.apps.slice(-8).map(a=>({company:a.co,role:a.role,status:a.status,date:a.date})),byStatus:ASTAT.reduce((o,k)=>(o[k]=S.apps.filter(a=>a.status===k).length,o),{})},workingOnNow:S.chat.focus?{text:S.chat.focus,minutesAgo:Math.round((Date.now()-S.chat.focusAt)/60000)}:null}}
+const sysPrompt=P=>'You are '+P.name+', a close friend acting as the user\'s accountability partner inside their habit tracker app. You are an AI character; if the user sincerely asks whether you are human, say plainly that you are an AI. Style: texting a friend. One to three short sentences, casual, no lists, no markdown, at most one emoji and only sometimes. Use the app snapshot to be specific (real task names, streak, project deadline) without reciting numbers like a report. Ask at most one question. Their goals: learn Excel, SQL, Power BI, Python and R, ship one portfolio project every week, apply to jobs on a schedule, and become job-ready. You can ask about the job search and specific applications. Hold them accountable kindly: do not flatter slacking, be honest but warm about gaps, and celebrate real wins. Never invent progress that is not in the snapshot. If they seem overwhelmed or genuinely distressed, drop the coaching tone and be supportive. Your personality: '+P.vibe;
+const norm=l=>{const o=[];l.forEach(m=>{const r=o[o.length-1];if(r&&r.role===m.role)r.content+='\n'+m.content;else o.push({role:m.role,content:m.content})});if(!o.length||o[0].role!=='user')o.unshift({role:'user',content:'(chat opened)'});return o};
+const hist=pid=>S.chat.msgs[pid].filter(m=>m.r!=='sys').slice(-24).map(m=>({role:m.r==='me'?'user':'assistant',content:m.t}));
+async function aiCall(pid,list){
+  const P=S.chat.partners.find(x=>x.id===pid),sys=sysPrompt(P)+'\n\nAPP SNAPSHOT (private context, use naturally): '+JSON.stringify(ctx()),m=norm(list);
+  if(AIMODE==='claude'){const sm=await claude.use('sample');if(sm){m[0].content=sys+'\n\n---\n'+m[0].content;const r=await sm(m,{cache:false,modelTier:'quick'});return(r.text||'').trim()}}
+  const k=lsGet('skillquest_key');if(!k)throw{code:'noai'};
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:300,system:sys,messages:m})});
+  const j=await r.json();if(!r.ok)throw{code:'api',message:(j.error&&j.error.message)||r.status};return j.content.map(c=>c.text||'').join('').trim()
+}
+function chatLog(pid,r,t){const a=S.chat.msgs[pid];a.push({r,t,at:Date.now()});if(a.length>60)a.splice(0,a.length-60)}
+function fab(){const n=Object.values(S.chat.unread).reduce((a,b)=>a+b,0);$('fabn').textContent=n||''}
+function renderChat(){
+  const c=S.chat,p=c.partners.find(x=>x.id===c.active),log=c.msgs[p.id];
+  $('ctabs').innerHTML=c.partners.map(q=>'<button class="ptab'+(q.id===p.id?' on':'')+'" data-pt="'+q.id+'">'+esc(q.name)+(c.unread[q.id]?' <span class="dot"></span>':'')+'</button>').join('');
+  $('cset').style.display=CSET?'block':'none';
+  $('cm').innerHTML=(log.length?log.map(m=>'<div class="mg '+m.r+'">'+esc(m.t)+'</div>').join(''):'<div class="mg sys">Say hi to '+esc(p.name)+'. They can see your tasks, streak and projects.</div>')+(TYP[p.id]?'<div class="mg ai dots"><span>•</span><span>•</span><span>•</span></div>':'');
+  $('cm').scrollTop=1e9
+}
+function openChat(){S.chat.unread[S.chat.active]=0;$('chat').classList.add('on');$('bub').style.display='none';$('cfo').value=S.chat.focus||'';fab();renderChat();save()}
+function closeChat(){$('chat').classList.remove('on');CSET=false}
+async function sendChat(){const i=$('ci'),t=i.value.trim();if(!t)return;i.value='';const pid=S.chat.active;chatLog(pid,'me',t);TYP[pid]=true;renderChat();
+  try{chatLog(pid,'ai',await aiCall(pid,hist(pid)))}
+  catch(e){chatLog(pid,'sys',e&&e.code==='noai'?'No AI connected. Add your API key in the settings (gear).':e&&e.code==='not_granted'?'Permission to use Claude was not granted.':'Message failed: '+((e&&e.message)||'please try again'))}
+  TYP[pid]=false;save();renderChat()}
+function notify(pid,t){if(!t)return;chatLog(pid,'ai',t);const open=$('chat').classList.contains('on')&&S.chat.active===pid;
+  if(open)renderChat();else{S.chat.unread[pid]=(S.chat.unread[pid]||0)+1;const b=$('bub');b.textContent=S.chat.partners.find(x=>x.id===pid).name+': '+t.slice(0,90)+(t.length>90?'…':'');b.style.display='block';clearTimeout(BT);BT=setTimeout(()=>b.style.display='none',7000);sfx('blip')}
+  fab();save()}
+async function ping(ev,note,o){
+  const c=S.chat,now=Date.now();if(!(o&&o.force)&&now-c.last<90000)return;c.last=now;
+  const P=c.partners[c.next%c.partners.length];c.next++;save();
+  try{const r=await aiCall(P.id,[...hist(P.id),{role:'user',content:'[APP EVENT, not typed by the user: they '+note+' Reply as '+P.name+' with a short natural text message. Do not mention that this is an event.]'}]);if(r)notify(P.id,r)}
+  catch(e){if(e&&e.code==='noai')notify(P.id,CANNED[ev])}
+}
+function openPing(){const c=S.chat,now=Date.now();if(now-c.lastOpen<10800000)return;c.lastOpen=now;
+  ping('open','just opened the app.'+(c.focus?' Earlier they said they were working on: "'+c.focus+'" ('+Math.round((now-c.focusAt)/60000)+' minutes ago). Check in on that.':' Check in on how their day is going.'),{force:true})}
+function saveChatSet(){const p=S.chat.partners.find(x=>x.id===S.chat.active);p.name=$('sn').value.trim().slice(0,20)||p.name;p.vibe=$('sv').value.trim()||p.vibe;
+  try{const k=$('sk').value.trim();if(k)localStorage.setItem('skillquest_key',k);else localStorage.removeItem('skillquest_key')}catch(e){}
+  CSET=false;save();renderChat();toast('Chat settings saved')}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='ci'&&!e.shiftKey){e.preventDefault();sendChat()}});
+document.addEventListener('change',e=>{if(e.target.id==='cfo'){S.chat.focus=e.target.value.trim();S.chat.focusAt=Date.now();save()}});
+const AXP=300;
+function mig(){S.chat.partners.forEach(p=>{if(p.id==='dev'&&p.name==='Dev')p.name='Quinn'})}
+function askRestore(o){ask('Restore this backup?','This replaces your current progress with the backup. Anything you did after the backup was made will be lost.','Restore',()=>{S=Object.assign(fresh(),o);mig();save();render();toast('Backup restored')})}
+function lvlPop(l0){const l1=lvl();if(l1>l0){const g=[...GEAR,...BGS].filter(x=>x.l>l0&&x.l<=l1);POP.push({lv:1,k:'LEVEL UP',em:stage().e,t:'Level '+l1+' · '+stage().n,sub:g.length?'New unlocks: '+g.map(x=>x.n).join(', '):'Keep going!'})}}
+function checkAppBonus(){const g=S.jobGoal,ps=periodStart(),n=appsIn(periodKeys()),l0=lvl();
+  if(n>=g.n&&g.bonusFor!==ps){g.bonusFor=ps;S.xp+=AXP;POP.push({k:'APPLICATION GOAL',em:'📨',t:n+' applications this period',sub:'+'+AXP+' XP bonus!'});lvlPop(l0)}
+  else if(n<g.n&&g.bonusFor===ps){g.bonusFor=null;S.xp=Math.max(0,S.xp-AXP)}}
+function removeApp(id){S.apps=S.apps.filter(x=>x.id!==id);checkAppBonus();sync(1);save();render()}
+let UT,UFN;
+function showUndo(m,fn){UFN=fn;const u=$('undo');u.innerHTML=esc(m)+' <button data-act="undo">Undo</button>';u.classList.add('s');clearTimeout(UT);UT=setTimeout(()=>u.classList.remove('s'),5000)}
+function doUndo(){const f=UFN;UFN=null;$('undo').classList.remove('s');f&&f()}
+const ASTAT=['applied','interview','offer','rejected'],ASL={applied:'📨 Applied',interview:'🗣️ Interview',offer:'🎉 Offer',rejected:'❌ Rejected'};
+let EP=null;
+const pdate=s=>new Date(s+'T12:00:00');
+function periodStart(){const g=S.jobGoal;if(!g.anchor)g.anchor=wkKeys(0)[0];const a=pdate(g.anchor),len=7*g.weeks,idx=Math.max(0,Math.floor(Math.round((pdate(key(0))-a)/864e5)/len)),st=new Date(a);st.setDate(st.getDate()+idx*len);return fmt(st)}
+function periodKeys(){const st=pdate(periodStart()),k=[];for(let i=0;i<7*S.jobGoal.weeks;i++){const d=new Date(st);d.setDate(d.getDate()+i);k.push(fmt(d))}return k}
+const periodLeft=()=>{const k=periodKeys();return k.length-k.indexOf(key(0))};
+const appsIn=ks=>S.apps.filter(a=>ks.includes(a.date)).length;
+function settleApps(){const g=S.jobGoal,cur=periodStart();if(!g.settled){g.settled=cur;save();return}if(g.settled>=cur)return;
+  let w=g.settled,missed=0;const len=7*g.weeks;
+  while(w<cur){const d0=pdate(w),ks=[];for(let i=0;i<len;i++){const d=new Date(d0);d.setDate(d.getDate()+i);ks.push(fmt(d))}if(appsIn(ks)<g.n)missed++;d0.setDate(d0.getDate()+len);w=fmt(d0)}
+  g.settled=cur;
+  if(missed&&S.stake.mode!=='off'){const lose=Math.min(S.xp,PEN[S.stake.mode]*missed),usd=(S.stake.usd||0)*missed;
+    S.xp-=lose;S.owed+=usd;S.appMiss+=missed;if(S.stake.mode==='hardcore'){S.streak=0;S.prev=null}sync(1);
+    ping('appmiss','did not reach their job application goal last period and lost XP. Be honest but kind and ask what got in the way.',{force:true});
+    POP.push({k:'APPLICATIONS MISSED',em:'📉',t:'Application goal missed',sub:(lose?'-'+lose+' XP. ':'')+(usd?'You owe $'+usd+' to your penalty jar. ':'')+(S.stake.mode==='hardcore'?'Streak reset. ':'')+'New period, new chance. Send those applications.'})}
+  save()}
+function addApp(quick){const co=quick?'Application':$('ac').value.trim();if(!co){toast('Add a company or role first');return}
+  const a={id:'a'+Date.now(),co:co.slice(0,50),role:quick?'':$('ar').value.trim().slice(0,50),date:key(0),status:'applied'};S.apps.push(a);const n=appsIn(periodKeys());
+  checkAppBonus();
+  sync();save();render();showUndo('Application logged',()=>removeApp(a.id));toast('📨 Application '+n+'/'+S.jobGoal.n);
+  ping('app','logged job application #'+n+' of '+S.jobGoal.n+' this period ('+a.co+(a.role?', '+a.role:'')+').',{force:true});showPop()}
+function appBanner(){const g=S.jobGoal,n=appsIn(periodKeys()),left=periodLeft(),ok=n>=g.n;
+  return '<div class="card menu" data-t="jobs" style="padding:10px 14px;'+(!ok&&left<=2?'border-color:var(--red)':'')+'"><div class="em" style="font-size:1.6rem">'+(ok?'✅':left<=2?'🚨':'📨')+'</div><div><b style="font-size:1rem">'+(ok?'Applications done: '+n+'/'+g.n:'Apply: '+n+'/'+g.n+' · '+left+' day'+(left>1?'s':'')+' left')+'</b></div></div>'}
+function appsHTML(){
+  const g=S.jobGoal,ks=periodKeys(),list=S.apps.filter(a=>ks.includes(a.date)),n=list.length,left=periodLeft(),ok=n>=g.n,pen=PEN[S.stake.mode]||0;
+  let dots='';for(let i=0;i<Math.max(g.n,n);i++)dots+='<i style="display:inline-block;width:18px;height:18px;border-radius:50%;margin:2px;background:'+(i<n?'var(--green)':'var(--line)')+'"></i>';
+  return '<div class="card"><div class="ch"><h3>📨 Job applications</h3><span class="tag'+(ok?' ok':'')+'">'+n+'/'+g.n+'</span></div><div>'+dots+'</div>'+
+   '<div class="xp" style="margin:6px 0">'+(ok?'Goal reached for this period. Nice.':left+' day'+(left>1?'s':'')+' left'+(pen?' · miss it and lose '+pen+' XP':'')+' · +'+AXP+' XP bonus for hitting it')+'</div>'+
+   '<div class="add"><input id="ac" maxlength="50" placeholder="Company"><input id="ar" maxlength="50" placeholder="Role (optional)"></div><div class="set" style="margin-top:8px"><button class="btn" data-act="addapp">Log application</button><button class="btn" data-act="appq">+1 quick</button></div>'+
+   (list.length?'<div style="margin-top:10px">'+list.slice().reverse().map(a=>'<div class="task" style="min-height:48px;cursor:default"><div class="t">'+esc(a.co)+(a.role?' · '+esc(a.role):'')+'<div class="xp">'+a.date+'</div></div><button class="chip" data-as="'+a.id+'">'+ASL[a.status]+'</button><button class="x" data-da="'+a.id+'" aria-label="Delete application">✕</button></div>').join('')+'</div>':'')+
+   '<div class="xp" style="margin-top:8px">Goal: <input id="gn" type="number" min="1" value="'+g.n+'" style="width:64px;min-height:36px;display:inline-block;flex:none"> applications every</div><div class="chips"><button class="chip'+(g.weeks===1?' on':'')+'" data-gw="1">1 week</button><button class="chip'+(g.weeks===2?' on':'')+'" data-gw="2">2 weeks</button></div></div>'
+}
+function projEditHTML(p){
+  return '<div class="card"><h3 style="margin-bottom:8px">Edit project</h3><input id="ep-t" maxlength="60" value="'+esc(p.title)+'"><input id="ep-l" type="url" placeholder="Link (optional)" style="margin-top:8px" value="'+esc(p.link||'')+'"><div class="xp" style="margin-top:8px">Deadline:</div><input id="ep-d" type="date" value="'+esc(p.due||'')+'"><div class="xp" style="margin-top:8px">Skills used:</div><div class="chips">'+
+   S.tracks.map(k=>'<label class="chip" style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-ek="'+k.id+'"'+(p.skills.includes(k.id)?' checked':'')+' style="flex:none;width:18px;height:18px;min-height:18px"> '+k.em+' '+esc(k.name)+'</label>').join('')+'</div><div class="set"><button class="btn" data-act="epsave">Save</button><button class="btn" data-act="epcancel" style="background:var(--line);color:var(--ink)">Cancel</button></div></div>'
+}
+function saveProj(){const p=S.projects.find(x=>x.id===EP);if(!p)return;const t=$('ep-t').value.trim();if(!t){toast('The title cannot be empty');return}
+  p.title=t.slice(0,60);p.link=$('ep-l').value.trim().slice(0,200);p.due=$('ep-d').value;p.skills=[...document.querySelectorAll('[data-ek]:checked')].map(x=>x.dataset.ek);EP=null;save();render();toast('Project updated')}
+document.addEventListener('change',e=>{if(e.target.id==='gn'){S.jobGoal.n=Math.max(1,parseInt(e.target.value,10)||10);checkAppBonus();sync(1);save();render();showPop()}});
+function nag(){
+  if(S.stake.mode==='off'||S.nag===key(0))return;
+  const needP=shipped(wkKeys(0))===0,g=S.jobGoal,n=appsIn(periodKeys()),needA=n<g.n;if(!needP&&!needA)return;
+  const leftW=7-(new Date(Date.now()+S.offset*864e5).getDay()+6)%7,left=Math.min(needP?leftW:99,needA?periodLeft():99),pen=PEN[S.stake.mode],
+   b=S.projects.filter(p=>p.status==='building').sort((a,c)=>(a.due||'9')<(c.due||'9')?-1:1)[0],parts=[];
+  if(needP)parts.push(b?'finish and ship "'+b.title+'"':'ship a project');if(needA)parts.push('send '+(g.n-n)+' more job application'+(g.n-n>1?'s':''));
+  const what=parts.join(' and ');let t,m;
+  if(left>=6){t='📌 Clear targets';m='Coming up: '+what+'. Small and done beats perfect and imaginary.'}
+  else if(left>=3){t='⏳ '+left+' days left';m='Still to do: '+what+'. Distractions are loud; your future job is quiet.'}
+  else if(left===2){t='🚨 2 days left';m='Future you wants this done: '+what+'.'}
+  else{t='🔥 Last day';m='Before midnight: '+what+'. Smaller is fine, nothing is not.'}
+  S.nag=key(0);save();ask(t,m+(pen?' Miss it and lose '+pen+' XP.':''),'Open',()=>go(needA&&!needP?'jobs':'proj'),'Later')
+}
 function sync(relock){
   const nb={},m=[],BD=getBadges(S);
   BD.forEach(b=>{if(b.t(S)){nb[b.id]=S.badges[b.id]||key(0);if(!S.badges[b.id])POP.push({k:'BADGE UNLOCKED',em:b.em,t:b.n,sub:b.d})}});
@@ -412,7 +513,7 @@ function sync(relock){
   S.jobs.forEach(j=>{const r=j.skills.length>0&&jPct(j)>=.999;if(r&&!j.ready)POP.push({k:'JOB READY',em:'💼',t:'Qualified: '+j.title,sub:'Every skill on this path is mastered. Time to apply!'});j.ready=r});
   S.badges=nb;return m
 }
-function toggle(id){
+function toggle(id,nu){
   const d=key(0),task=S.tasks.find(t=>t.id===id);if(!task)return;
   S.done[d]=S.done[d]||{};const l0=lvl(),m=[];
   if(S.done[d][id]){
@@ -429,7 +530,8 @@ function toggle(id){
   const l1=lvl();
   if(l1>l0){const g=[...GEAR,...BGS].filter(x=>x.l>l0&&x.l<=l1);POP.push({lv:1,k:'LEVEL UP',em:stage().e,t:'Level '+l1+' · '+stage().n,sub:g.length?'New unlocks: '+g.map(x=>x.n).join(', '):'Keep going!'})}
   else if(l1<l0)m.push('⬇️ Level '+l1);
-  save();render();toast(m.join('  •  '));sfx(S.done[d][id]?'check':'undo');showPop();
+  save();render();toast(m.join('  •  '));sfx(S.done[d][id]?'check':'undo');showPop();if(!nu)showUndo(S.done[d][id]?'Task completed':'Task unchecked',()=>toggle(id,true));
+  if(S.done[d][id]){const n=Object.keys(S.done[d]).length;ping('done','just completed the task "'+task.text+'" ('+(S.tracks.find(k=>k.id===task.tr)||{}).name+'). They have finished '+n+' task(s) today. React like a proud friend.',{force:n===1})}
 }
 function addSkill(){
   const n=$('nsN').value.trim();if(!n){toast('Name your skill first');return}
@@ -441,7 +543,7 @@ function delSkill(id){
 }
 function restoreSkill(id){const k=S.gone.find(x=>x.id===id);if(!k)return;S.gone=S.gone.filter(x=>x.id!==id);S.tracks.push(k);save();render()}
 function backup(){const e=$('bk');e.value=JSON.stringify(S);e.select();try{navigator.clipboard.writeText(e.value)}catch(x){}toast('Backup ready. Copy it and keep it safe')}
-function restore(){try{const o=JSON.parse($('bk').value);if(!o||!Array.isArray(o.tasks))throw 0;S=Object.assign(fresh(),o);save();render();toast('Backup restored')}catch(e){toast('Paste a valid backup first')}}
+function restore(){try{const o=JSON.parse($('bk').value);if(!o||!Array.isArray(o.tasks))throw 0;askRestore(o)}catch(e){toast('Paste a valid backup first')}}
 function heroHTML(){
   const L=lvl(),st=stage(),nx=STAGES.find(x=>x.l>L),q=S.equip,
    on=id=>GEAR.find(g=>g.id===id&&L>=g.l),bg=BGS.find(b=>b.id===q.bg&&L>=b.l)||BGS[0],
@@ -467,7 +569,7 @@ function weekStats(){
 }
 function addTask(tr){
   const i=$('in-'+tr),v=i.value.trim();if(!v)return;
-  S.tasks.push({id:'t'+Date.now(),tr,text:v.slice(0,80)});save();render()
+  S.tasks.push({id:'t'+Date.now(),tr,text:v.slice(0,80)});save();render();ping('task','added a new task: "'+v.slice(0,80)+'" under '+(S.tracks.find(k=>k.id===tr)||{}).name+'. Ask them naturally when they plan to do it.',{force:true})
 }
 function delTask(id){const d=key(0);if(S.done[d]&&S.done[d][id])toggle(id);S.tasks=S.tasks.filter(t=>t.id!==id);save();render()}
 function addReward(){
@@ -478,7 +580,7 @@ function addReward(){
 const rProg=r=>r.type==='streak'?S.streak:S.xp;
 function claim(id){const r=S.rewards.find(x=>x.id===id);if(r&&rProg(r)>=r.target){r.claimed=true;save();render();POP.push({k:'REWARD UNLOCKED',em:'🎁',t:r.name,sub:r.amt?'Time to move $'+r.amt+' into your reward fund!':'You earned it. Enjoy!'});showPop()}}
 function delReward(id){S.rewards=S.rewards.filter(r=>r.id!==id);save();render()}
-function skipDay(){S.offset++;checkReset();settle();save();render();showPop();toast('⏭️ Moved to the next day (test mode)')}
+function skipDay(){S.offset++;checkReset();settle();settleApps();save();render();showPop();toast('⏭️ Moved to the next day (test mode)')}
 function resetAll(){ask('Erase everything?','All XP, streaks, badges, skills and rewards will be deleted. Make a backup first if unsure.','Erase all',()=>{S=fresh();save();render()})}
 
 function render(){
@@ -495,7 +597,7 @@ function render(){
   $('lvl').textContent=stage().e+' Lv '+lvl();
 
   $('t-today').innerHTML=
-   banner+'<p class="note">Check off a task to earn +'+XP+' XP. Do at least one task every day to keep your streak alive.</p>'+
+   banner+appBanner()+'<p class="note">Check off a task to earn +'+XP+' XP. Do at least one task every day to keep your streak alive.</p>'+
    S.tracks.map(k=>{
      const ts=S.tasks.filter(t=>t.tr===k.id),dd=ts.filter(t=>dn[t.id]).length,wt=w.by[k.id];
      return '<div class="card" style="--c:'+k.c+'"><div class="ch"><div class="ic" style="background:'+k.c+'">'+k.em+'</div>'+
@@ -505,11 +607,11 @@ function render(){
       (ts.length?ts.map(t=>'<div class="task'+(dn[t.id]?' d':'')+'" data-tg="'+t.id+'" role="checkbox" aria-checked="'+!!dn[t.id]+'" tabindex="0"><div class="bx">'+(dn[t.id]?'✓':'')+'</div><div class="t">'+esc(t.text)+'</div><span class="xp">+'+XP+'</span><button class="x" data-del="'+t.id+'" aria-label="Delete task">✕</button></div>').join(''):'<div class="empty">No tasks yet. Add your first goal below.</div>')+
       '<div class="add"><input id="in-'+k.id+'" maxlength="80" placeholder="New '+k.name+' task"><button class="btn" data-add="'+k.id+'">Add</button></div></div>'
    }).join('')+'<div class="card"><h3 style="margin-bottom:8px">➕ Add your own skill</h3><div class="add"><input id="nsE" maxlength="2" value="⭐" style="flex:0 0 64px;text-align:center;font-size:1.3rem" aria-label="Emoji"><input id="nsN" maxlength="20" placeholder="e.g. Tableau"><input id="nsC" type="color" value="#ff6b00" style="flex:0 0 56px;padding:2px" aria-label="Color"></div><button class="btn" style="width:100%;margin-top:8px" data-act="addskill">Create skill card</button></div>';
-  $('t-hero').innerHTML=heroHTML();$('t-road').innerHTML=roadHTML();$('t-more').innerHTML=moreHTML();$('t-tarot').innerHTML=tarotHTML();$('t-jobs').innerHTML=jobsHTML();$('t-proj').innerHTML=projHTML();$('t-cal').innerHTML=calHTML();
+  $('t-hero').innerHTML=heroHTML();$('t-road').innerHTML=roadHTML();$('t-more').innerHTML=moreHTML();$('t-jobs').innerHTML=jobsHTML();$('t-proj').innerHTML=projHTML();$('t-cal').innerHTML=calHTML();
 
   $('t-badges').innerHTML=BACK+'<h2 style="margin:10px 0">Badges &amp; Achievements</h2><div class="grid">'+
-   BD.map(b=>{const u=S.badges[b.id];return '<div class="card badge'+(u?'':' lock')+'"><div class="em">'+(u?b.em:'🔒')+'</div><b>'+b.n+'</b><small>'+(u?'Unlocked':b.d)+'</small></div>'}).join('')+'</div>'+
-   '<div class="card"><h3 style="margin-bottom:8px">Settings</h3><p class="note">Best streak: '+S.best+' days. Test mode jumps to the next day so you can see the streak reset when a day is missed.</p><div class="set"><button class="btn" data-act="skip">Skip to next day</button><button class="btn r" data-act="reset">Reset all</button></div>'+(S.gone.length?'<p class="note">Restore a deleted skill:</p><div class="set">'+S.gone.map(k=>'<button class="btn" data-rs="'+k.id+'">'+k.em+' '+esc(k.name)+'</button>').join('')+'</div>':'')+'<p class="note">Backup: copy your progress as text, or paste a backup here and restore it.</p><textarea id="bk" rows="3" style="width:100%;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink);padding:8px"></textarea><div class="set" style="margin-top:8px"><button class="btn" data-act="bkup">Make backup</button><button class="btn" data-act="bkre">Restore backup</button></div><div class="set" style="margin-top:8px"><button class="btn" data-act="bkfile">Save backup file</button><button class="btn" data-act="bkload">Load backup file</button></div><input type="file" id="bkf" accept=".json,application/json" hidden></div>';
+   BD.map(b=>{const u=S.badges[b.id];return '<div class="card badge'+(u?'':' lock')+'"><div class="em">'+(u?b.em:'🔒')+'</div><b>'+b.n+'</b><small>'+(u?'Unlocked':b.d)+'</small></div>'}).join('')+'</div>';
+  $('t-set').innerHTML=BACK+'<h2 style="margin:10px 0">⚙️ Settings</h2>'+'<div class="card"><h3 style="margin-bottom:8px">Settings</h3><p class="note">Best streak: '+S.best+' days. Test mode jumps to the next day so you can see the streak reset when a day is missed.</p><div class="set"><button class="btn" data-act="skip">Skip to next day</button><button class="btn r" data-act="reset">Reset all</button></div>'+(S.gone.length?'<p class="note">Restore a deleted skill:</p><div class="set">'+S.gone.map(k=>'<button class="btn" data-rs="'+k.id+'">'+k.em+' '+esc(k.name)+'</button>').join('')+'</div>':'')+'<p class="note">Backup: copy your progress as text, or paste a backup here and restore it.</p><textarea id="bk" rows="3" style="width:100%;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink);padding:8px"></textarea><div class="set" style="margin-top:8px"><button class="btn" data-act="bkup">Make backup</button><button class="btn" data-act="bkre">Restore backup</button></div><div class="set" style="margin-top:8px"><button class="btn" data-act="bkfile">Save backup file</button><button class="btn" data-act="bkload">Load backup file</button></div><input type="file" id="bkf" accept=".json,application/json" hidden></div>';
 
   $('t-vault').innerHTML='<h2 style="margin-bottom:4px">Incentive Vault</h2><p class="note">Set rewards for yourself. They unlock when you hit a streak or XP target. The app cannot move money for you: when you claim a reward with an amount, put that money aside yourself.'+(fund?' Set aside so far: <b>$'+fund+'</b>':'')+'</p>'+
    (S.rewards.length?S.rewards.map(r=>{
@@ -524,7 +626,12 @@ function render(){
 
 document.addEventListener('click',e=>{
   const t=e.target;
-  const nb=t.closest('[data-t]');if(nb){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(['tarot','jobs','badges','proj','cal'].includes(nb.dataset.t)?'more':nb.dataset.t)));document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id==='t-'+nb.dataset.t));if(nb.dataset.t==='road')setTimeout(()=>{const c=$('cur');c&&c.scrollIntoView({block:'center'})},60);else window.scrollTo(0,0);return}
+  const nb=t.closest('[data-t]');if(nb){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(['jobs','badges','proj','cal','set'].includes(nb.dataset.t)?'more':nb.dataset.t)));document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id==='t-'+nb.dataset.t));if(nb.dataset.t==='road')setTimeout(()=>{const c=$('cur');c&&c.scrollIntoView({block:'center'})},60);else window.scrollTo(0,0);return}
+  const as=t.closest('[data-as]');if(as){const a=S.apps.find(x=>x.id===as.dataset.as);if(a){a.status=ASTAT[(ASTAT.indexOf(a.status)+1)%4];save();render()}return}
+  const da=t.closest('[data-da]');if(da){const a=S.apps.find(x=>x.id===da.dataset.da);ask('Delete this application?',a?a.co:'','Delete',()=>removeApp(da.dataset.da));return}
+  const gw=t.closest('[data-gw]');if(gw){const w=parseInt(gw.dataset.gw,10);if(w!==S.jobGoal.weeks){S.jobGoal.weeks=w;S.jobGoal.anchor=wkKeys(0)[0];S.jobGoal.settled=null;settleApps();save();render()}return}
+  const ep=t.closest('[data-ep]');if(ep){EP=ep.dataset.ep;render();return}
+  const pt=t.closest('[data-pt]');if(pt){S.chat.active=pt.dataset.pt;S.chat.unread[pt.dataset.pt]=0;CSET=false;fab();save();renderChat();return}
   const cm=t.closest('[data-cm]');if(cm){CMO+=parseInt(cm.dataset.cm,10);render();return}
   const sm=t.closest('[data-sm]');if(sm){S.stake.mode=sm.dataset.sm;save();render();return}
   const pc=t.closest('[data-pc]');if(pc){PT=$('pn').value;PL=$('pl').value;PD=$('pd').value;const id=pc.dataset.pc;PSEL=PSEL.includes(id)?PSEL.filter(x=>x!==id):[...PSEL,id];render();return}
@@ -543,7 +650,7 @@ document.addEventListener('click',e=>{
   const ad=t.closest('[data-add]');if(ad){addTask(ad.dataset.add);return}
   const cl=t.closest('[data-cl]');if(cl){claim(cl.dataset.cl);return}
   const rd=t.closest('[data-rd]');if(rd){const r=S.rewards.find(x=>x.id===rd.dataset.rd);ask('Delete this reward?',r?r.name:'','Delete',()=>delReward(rd.dataset.rd));return}
-  const a=t.closest('[data-act]');if(a){({skip:skipDay,reset:resetAll,addr:addReward,addskill:addSkill,askyes:askYes,askno:askNo,addproj:addProj,su:saveUsd,paid:()=>{S.owed=0;save();render()},pull:pullCard,addjob:addJob,snd:()=>{S.mute=!S.mute;save();render();sfx('blip')},popok:popOk,bkup:backup,bkre:restore,bkfile:bkFile,bkload:()=>$('bkf').click()})[a.dataset.act]()}
+  const a=t.closest('[data-act]');if(a){({skip:skipDay,reset:resetAll,addr:addReward,addskill:addSkill,askyes:askYes,askno:askNo,addproj:addProj,addapp:()=>addApp(false),appq:()=>addApp(true),epsave:saveProj,epcancel:()=>{EP=null;render()},chat:openChat,chatx:closeChat,undo:doUndo,send:sendChat,cset:()=>{CSET=!CSET;if(CSET){const p=S.chat.partners.find(x=>x.id===S.chat.active);$('sn').value=p.name;$('sv').value=p.vibe;$('sk').value=lsGet('skillquest_key')||''}renderChat()},csave:saveChatSet,cclr:()=>{S.chat.msgs[S.chat.active]=[];save();renderChat()},su:saveUsd,paid:()=>{S.owed=0;save();render()},addjob:addJob,snd:()=>{S.mute=!S.mute;save();render();sfx('blip')},popok:popOk,bkup:backup,bkre:restore,bkfile:bkFile,bkload:()=>$('bkf').click()})[a.dataset.act]()}
 });
 document.addEventListener('change',e=>{const g=e.target.dataset&&e.target.dataset.goal;if(!g)return;const k=S.tracks.find(x=>x.id===g);if(k){k.goal=Math.max(1,parseInt(e.target.value,10)||25);sync();save();render();showPop()}});
 document.addEventListener('keydown',e=>{
@@ -551,10 +658,10 @@ document.addEventListener('keydown',e=>{
   else if((e.key==='Enter'||e.key===' ')&&e.target.dataset&&e.target.dataset.tg){e.preventDefault();toggle(e.target.dataset.tg)}
 });
 function bkFile(){const b=new Blob([JSON.stringify(S)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='skillquest-backup-'+key(0)+'.json';document.body.appendChild(a);a.click();a.remove();toast('Backup file saved to your downloads')}
-document.addEventListener('change',e=>{const f=e.target.id==='bkf'&&e.target.files[0];if(f)f.text().then(t=>{try{const o=JSON.parse(t);if(!Array.isArray(o.tasks))throw 0;S=Object.assign(fresh(),o);save();render();toast('Backup restored')}catch(x){toast('That is not a valid backup file')}})});
+document.addEventListener('change',e=>{const f=e.target.id==='bkf'&&e.target.files[0];if(f)f.text().then(t=>{try{const o=JSON.parse(t);if(!Array.isArray(o.tasks))throw 0;askRestore(o)}catch(x){toast('That is not a valid backup file')}})});
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
-checkReset();sync();POP.length=0;settle();save();render();showPop();if(!POP.length)nag();
+mig();checkReset();sync();POP.length=0;settle();settleApps();save();render();showPop();if(!POP.length)nag();fab();openPing();
 </script>
 </body>
 </html>
