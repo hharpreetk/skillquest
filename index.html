@@ -43,10 +43,10 @@ header{background:var(--brand);color:#fff;padding:14px 14px 18px;border-radius:0
 .ch .ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:1.4rem;color:#fff}
 .ch h3{font-size:1.2rem;flex:1}
 .ch small{color:var(--mute);font-weight:800}
-.task{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 12px;border-radius:16px;border:2px solid var(--line);border-bottom-width:4px;margin-bottom:8px;cursor:pointer;user-select:none;transition:transform .08s}
-.task:active{transform:translateY(2px)}
+.task{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 12px;border-radius:16px;border:2px solid var(--line);border-bottom-width:4px;margin-bottom:8px;cursor:default;user-select:none;transition:transform .08s}
+.task .bx:active{transform:scale(.9)}
 .task.d{background:color-mix(in srgb,var(--c) 14%,var(--card));border-color:var(--c)}
-.task .bx{width:30px;height:30px;border-radius:10px;border:3px solid var(--line);display:grid;place-items:center;color:#fff;font-weight:800;flex:none}
+.task .bx{width:34px;height:34px;cursor:pointer;border-radius:10px;border:3px solid var(--line);display:grid;place-items:center;color:#fff;font-weight:800;flex:none}
 .task.d .bx{background:var(--c);border-color:var(--c)}
 .task .t{flex:1;word-break:break-word}
 .task.d .t{text-decoration:line-through;opacity:.7}
@@ -161,7 +161,7 @@ nav button.on{background:var(--brand);color:#fff}
 </head>
 <body>
 <header><div class="hin">
-  <div class="top"><h1>⚡ SkillQuest</h1><div style="display:flex;gap:6px"><button id="snd" data-act="snd" aria-label="Sound on or off"></button><button id="lvl" data-t="hero" aria-label="Open hero"></button></div></div>
+  <div class="top"><h1>⚡ SkillQuest</h1><div style="display:flex;gap:6px"><button id="snd" data-act="snd" aria-label="Sound on or off"></button><button id="lvl" data-t="road" aria-label="Open hero"></button></div></div>
   <div class="stats">
     <div class="stat"><b id="sXp">0</b><span>Total XP</span></div>
     <div class="stat"><b><span class="flame" id="fl">🔥</span> <span id="sSt">0</span></b><span>Day streak</span></div>
@@ -176,7 +176,6 @@ nav button.on{background:var(--brand);color:#fff}
   <section class="tab on" id="t-today"></section>
   <section class="tab" id="t-badges"></section>
   <section class="tab" id="t-road"></section>
-  <section class="tab" id="t-hero"></section>
   <section class="tab" id="t-vault"></section>
   <section class="tab" id="t-more"></section>
   <section class="tab" id="t-jobs"></section>
@@ -188,9 +187,9 @@ nav button.on{background:var(--brand);color:#fff}
 <nav><div class="in">
   <button data-t="today" class="on"><span>✅</span>Today</button>
   <button data-t="road"><span>🗺️</span>Road</button>
-  <button data-t="hero"><span>🦊</span>Hero</button>
+  <button data-t="proj"><span>🛠️</span>Projects</button>
+  <button data-t="cal"><span>📅</span>Calendar</button>
   <button data-t="more"><span>✨</span>More</button>
-  <button data-t="vault"><span>🎁</span>Vault</button>
 </div></nav>
 <div id="ask" role="alertdialog"></div><button id="fab" data-act="chat" aria-label="Open chat">💬<span id="fabn"></span></button>
 <div id="bub" data-act="chat"></div>
@@ -300,8 +299,7 @@ let JT='',JSEL=[],TFLIP=false;
 function moreHTML(){
   const rd=S.jobs.filter(j=>j.ready).length;
   const m=(g,e,n,d)=>'<div class="card menu" data-t="'+g+'"><div class="em">'+e+'</div><div><b>'+n+'</b><div class="xp">'+d+'</div></div></div>';
-  return '<h2 style="margin-bottom:10px">More</h2>'+   m('cal','📅','Calendar','Your month at a glance')+
-   m('proj','🛠️','Projects',(shipped(wkKeys(0))?'✅ Shipped this week':'🎯 Ship 1 this week')+' · '+S.projects.filter(p=>p.status==='shipped').length+' total')+
+  return '<h2 style="margin-bottom:10px">More</h2>'+   m('vault','🎁','Vault',S.rewards.filter(r=>r.claimed).length+' claimed · '+S.rewards.length+' rewards')+
    m('jobs','💼','Career Goals',S.jobs.length?S.jobs.length+' goals · '+rd+' ready':'Link skills to dream jobs')+
    m('badges','🏅','Badges',Object.keys(S.badges).length+' earned')+
    m('set','⚙️','Settings','Backup, restore skills, reset')
@@ -321,7 +319,7 @@ function askYes(){$('ask').classList.remove('on');const f=ASKFN;ASKFN=null;f&&f(
 function askNo(){$('ask').classList.remove('on');ASKFN=null}
 const PXP=200,PEN={off:0,gentle:0,serious:300,hardcore:1000};
 const fmt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-function go(t){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(['jobs','badges','proj','cal','set'].includes(t)?'more':t)));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='t-'+t));window.scrollTo(0,0)}
+function go(t){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(['jobs','badges','set','hero','vault'].includes(t)?'more':t)));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='t-'+t));window.scrollTo(0,0)}
 function saveUsd(){S.stake.usd=Math.max(0,parseFloat($('su').value)||0);save();render();toast('Penalty saved')}
 function stakesHTML(){
   const m=[['off','Off'],['gentle','Reminders only'],['serious','−300 XP'],['hardcore','−1000 XP + streak reset']];
@@ -373,7 +371,7 @@ function doShip(id){const p=S.projects.find(x=>x.id===id);if(!p)return;const l0=
   save();render();if(m.length)toast(m.join('  •  '));sfx(p.status==='shipped'?'check':'undo');showPop();if(p.status==='shipped')ping('ship','shipped their portfolio project "'+p.title+'". Celebrate with them.',{force:true})}
 function projHTML(){
   const done=shipped(wkKeys(0))>0,st=projStreak();
-  return BACK+'<h2 style="margin:10px 0 4px">🛠️ Projects</h2><p class="note">Projects are one-off pieces for your portfolio, while tasks are daily habits. Ship at least one project every week.</p>'+
+  return '<h2 style="margin:10px 0 4px">🛠️ Projects</h2><p class="note">Projects are one-off pieces for your portfolio, while tasks are daily habits. Ship at least one project every week.</p>'+
    '<div class="card" style="text-align:center"><div style="font-size:2.6rem">'+(done?'✅':'🎯')+'</div><b>'+(done?'Weekly project done!':'Ship 1 project this week')+'</b><div class="xp">🔥 '+st+'-week project streak · +'+PXP+' XP per shipped project</div></div>'+
    stakesHTML()+(S.projects.length?S.projects.map(p=>{if(EP===p.id)return projEditHTML(p);const sh=p.status==='shipped',ks=p.skills.map(id=>allK().find(k=>k.id===id)).filter(Boolean);
     return '<div class="card"><div class="ch"><h3>'+(sh?'🚀 ':'🔨 ')+esc(p.title)+'</h3><span class="tag'+(sh?' ok':'')+'">'+(sh?'Shipped':'Building')+'</span><button class="x" data-ep="'+p.id+'" aria-label="Edit project">✎</button><button class="x" data-dp="'+p.id+'" aria-label="Delete project">✕</button></div>'+
@@ -389,7 +387,7 @@ function calHTML(){
   for(let d=1;d<=n;d++){const k=fmt(new Date(y,m,d)),t=S.done[k]?Object.keys(S.done[k]).length:0,pr=S.projects.some(p=>p.status==='shipped'&&p.date===k);if(t)act++;
     c+='<div class="day l'+(t>=5?4:t>=3?3:t>=2?2:t>=1?1:0)+(k===key(0)?' today':'')+'">'+d+(pr?'<i>🚀</i>':'')+'</div>'}
   const sp=S.projects.filter(p=>p.status==='shipped'&&p.date&&p.date.slice(0,7)===pre).length;
-  return BACK+'<h2 style="margin:10px 0">📅 Calendar</h2><div class="card"><div class="ch"><button class="chip" data-cm="-1" aria-label="Previous month">‹</button><h3 style="text-align:center">'+f.toLocaleString('en',{month:'long',year:'numeric'})+'</h3><button class="chip" data-cm="1" aria-label="Next month">›</button></div><div class="cal">'+['M','T','W','T','F','S','S'].map(x=>'<b>'+x+'</b>').join('')+c+'</div><div class="xp">Active days: '+act+' · Projects shipped: '+sp+' · Darker green means more tasks done. 🚀 marks a shipped project.</div></div>'
+  return '<h2 style="margin:10px 0">📅 Calendar</h2><div class="card"><div class="ch"><button class="chip" data-cm="-1" aria-label="Previous month">‹</button><h3 style="text-align:center">'+f.toLocaleString('en',{month:'long',year:'numeric'})+'</h3><button class="chip" data-cm="1" aria-label="Next month">›</button></div><div class="cal">'+['M','T','W','T','F','S','S'].map(x=>'<b>'+x+'</b>').join('')+c+'</div><div class="xp">Active days: '+act+' · Projects shipped: '+sp+' · Darker green means more tasks done. 🚀 marks a shipped project.</div></div>'
 }
 let AIMODE=typeof claude!=='undefined'?'claude':'key',CSET=false,BT;const TYP={};
 const CANNED={task:"ok, when are you planning to do that one?",done:"nice, one more down. proud of you.",ship:"you shipped it!! that is how a portfolio gets built.",proj:"good one. when are you planning to ship it?",miss:"rough week for projects. what got in the way?",app:"logged. nice, how many more to go this week?",appmiss:"the application goal slipped. what got in the way?",open:"hey, how is today going so far?"};
@@ -544,21 +542,6 @@ function delSkill(id){
 function restoreSkill(id){const k=S.gone.find(x=>x.id===id);if(!k)return;S.gone=S.gone.filter(x=>x.id!==id);S.tracks.push(k);save();render()}
 function backup(){const e=$('bk');e.value=JSON.stringify(S);e.select();try{navigator.clipboard.writeText(e.value)}catch(x){}toast('Backup ready. Copy it and keep it safe')}
 function restore(){try{const o=JSON.parse($('bk').value);if(!o||!Array.isArray(o.tasks))throw 0;askRestore(o)}catch(e){toast('Paste a valid backup first')}}
-function heroHTML(){
-  const L=lvl(),st=stage(),nx=STAGES.find(x=>x.l>L),q=S.equip,
-   on=id=>GEAR.find(g=>g.id===id&&L>=g.l),bg=BGS.find(b=>b.id===q.bg&&L>=b.l)||BGS[0],
-   h=on(q.head),f=on(q.face),sd=on(q.side),bd=on(q.buddy),into=S.xp-thr(L),nd=L>=MAXL?0:need(L),
-   nu=[...GEAR,...BGS].filter(x=>x.l>L).sort((a,b)=>a.l-b.l)[0];
-  const gc=g=>{const u=L>=g.l,e=q[g.slot]===g.id;return '<div class="card gear'+(u?'':' lk')+(e?' eqd':'')+'"><div class="e">'+g.e+'</div><b>'+g.n+'</b>'+(u?'<button class="btn'+(e?' y':'')+'" data-eq="'+g.id+'">'+(e?'Unequip':'Equip')+'</button>':'<div class="xp">🔒 Level '+g.l+'</div>')+'</div>'};
-  const bc=b=>{const u=L>=b.l,e=bg.id===b.id;return '<div class="card gear'+(u?'':' lk')+(e?' eqd':'')+'"><div class="e" style="height:44px;border-radius:12px;background:'+b.css+'"></div><b>'+b.n+'</b>'+(u?'<button class="btn'+(e?' y':'')+'" data-eb="'+b.id+'">'+(e?'Selected':'Use')+'</button>':'<div class="xp">🔒 Level '+b.l+'</div>')+'</div>'};
-  const SL={head:'🎩 Headwear',face:'🕶️ Eyewear',side:'⚔️ Weapons & items',buddy:'🐾 Buddies'};
-  return '<div class="card" style="text-align:center"><div class="stage" style="background:'+bg.css+'"><div class="hg">'+(h?h.e:'')+'</div><div class="c0">'+st.e+'</div><div class="fg">'+(f?f.e:'')+'</div><div class="sg">'+(sd?sd.e:'')+'</div><div class="bd">'+(bd?bd.e:'')+'</div></div>'+
-   '<h2>'+st.n+'</h2><div class="xp">Level '+L+(nd?' · '+into+' / '+nd+' XP to next level':' · MAX LEVEL')+'</div><div class="bar lt" style="margin:8px 0"><i style="width:'+(nd?into/nd*100:100)+'%;background:var(--green)"></i></div>'+
-   '<div class="note">'+(nx?'Evolves into '+nx.e+' '+nx.n+' at level '+nx.l+'. ':'Max evolution reached! ')+(nu?'Next unlock: '+(nu.e||'🖼️')+' '+nu.n+' at level '+nu.l+'.':'Everything unlocked!')+'</div></div>'+
-   Object.keys(SL).map(k=>'<h3 style="margin:4px 0 8px">'+SL[k]+'</h3><div class="grid">'+GEAR.filter(g=>g.slot===k).map(gc).join('')+'</div>').join('')+
-   '<h3 style="margin:14px 0 8px">Backdrops</h3><div class="grid">'+BGS.map(bc).join('')+'</div>'+
-   '<p class="note">Level 50 needs about 68,600 XP (around 1,370 tasks). Unchecking a task takes XP back, so gear can lock again.</p>'
-}
 function weekStats(){
   const dt=new Date(Date.now()+S.offset*864e5),dow=(dt.getDay()+6)%7;
   const keys=[];for(let i=0;i<7;i++)keys.push(key(i-dow));
@@ -601,19 +584,19 @@ function render(){
    S.tracks.map(k=>{
      const ts=S.tasks.filter(t=>t.tr===k.id),dd=ts.filter(t=>dn[t.id]).length,wt=w.by[k.id];
      return '<div class="card" style="--c:'+k.c+'"><div class="ch"><div class="ic" style="background:'+k.c+'">'+k.em+'</div>'+
-      '<h3>'+esc(k.name)+'</h3><small>'+dd+'/'+ts.length+' today</small>'+(1?'<button class="x" data-dt="'+k.id+'" aria-label="Delete skill">🗑️</button>':'')+'</div>'+
+      '<h3>'+esc(k.name)+'</h3><small>'+dd+'/'+ts.length+' today</small>'+(1?'<button class="x" data-dt="'+k.id+'" aria-label="Delete skill">✕</button>':'')+'</div>'+
       '<div class="bar lt" style="margin-bottom:10px"><i style="width:'+(wt.n?wt.d/wt.n*100:0)+'%;background:'+k.c+'"></i></div>'+
       '<details class="mast"><summary>'+(kMast(k)?'🏆 Mastered':'🎯 Mastery '+cnt(S,k.id)+'/'+kGoal(k))+'</summary><div class="mopt"><label>Goal <input type="number" min="1" data-goal="'+k.id+'" value="'+kGoal(k)+'"></label><label class="mchk"><input type="checkbox" data-md="'+k.id+'"'+(k.done?' checked':'')+'> Mastered</label></div></details>'+
-      (ts.length?ts.map(t=>'<div class="task'+(dn[t.id]?' d':'')+'" data-tg="'+t.id+'" role="checkbox" aria-checked="'+!!dn[t.id]+'" tabindex="0"><div class="bx">'+(dn[t.id]?'✓':'')+'</div><div class="t">'+esc(t.text)+'</div><span class="xp">+'+XP+'</span><button class="x" data-del="'+t.id+'" aria-label="Delete task">✕</button></div>').join(''):'<div class="empty">No tasks yet. Add your first goal below.</div>')+
+      (ts.length?ts.map(t=>'<div class="task'+(dn[t.id]?' d':'')+'"><div class="bx" data-tg="'+t.id+'" role="checkbox" aria-checked="'+!!dn[t.id]+'" aria-label="Complete task" tabindex="0">'+(dn[t.id]?'✓':'')+'</div><div class="t">'+esc(t.text)+'</div><button class="x" data-del="'+t.id+'" aria-label="Delete task">✕</button></div>').join(''):'<div class="empty">No tasks yet. Add your first goal below.</div>')+
       '<div class="add"><input id="in-'+k.id+'" maxlength="80" placeholder="New '+k.name+' task"><button class="btn" data-add="'+k.id+'">Add</button></div></div>'
    }).join('')+'<div class="card"><h3 style="margin-bottom:8px">➕ Add your own skill</h3><div class="add"><input id="nsE" maxlength="2" value="⭐" style="flex:0 0 64px;text-align:center;font-size:1.3rem" aria-label="Emoji"><input id="nsN" maxlength="20" placeholder="e.g. Tableau"><input id="nsC" type="color" value="#ff6b00" style="flex:0 0 56px;padding:2px" aria-label="Color"></div><button class="btn" style="width:100%;margin-top:8px" data-act="addskill">Create skill card</button></div>';
-  $('t-hero').innerHTML=heroHTML();$('t-road').innerHTML=roadHTML();$('t-more').innerHTML=moreHTML();$('t-jobs').innerHTML=jobsHTML();$('t-proj').innerHTML=projHTML();$('t-cal').innerHTML=calHTML();
+  $('t-road').innerHTML=roadHTML();$('t-more').innerHTML=moreHTML();$('t-jobs').innerHTML=jobsHTML();$('t-proj').innerHTML=projHTML();$('t-cal').innerHTML=calHTML();
 
   $('t-badges').innerHTML=BACK+'<h2 style="margin:10px 0">Badges &amp; Achievements</h2><div class="grid">'+
    BD.map(b=>{const u=S.badges[b.id];return '<div class="card badge'+(u?'':' lock')+'"><div class="em">'+(u?b.em:'🔒')+'</div><b>'+b.n+'</b><small>'+(u?'Unlocked':b.d)+'</small></div>'}).join('')+'</div>';
   $('t-set').innerHTML=BACK+'<h2 style="margin:10px 0">⚙️ Settings</h2>'+'<div class="card"><h3 style="margin-bottom:8px">Settings</h3><p class="note">Best streak: '+S.best+' days. Test mode jumps to the next day so you can see the streak reset when a day is missed.</p><div class="set"><button class="btn" data-act="skip">Skip to next day</button><button class="btn r" data-act="reset">Reset all</button></div>'+(S.gone.length?'<p class="note">Restore a deleted skill:</p><div class="set">'+S.gone.map(k=>'<button class="btn" data-rs="'+k.id+'">'+k.em+' '+esc(k.name)+'</button>').join('')+'</div>':'')+'<p class="note">Backup: copy your progress as text, or paste a backup here and restore it.</p><textarea id="bk" rows="3" style="width:100%;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink);padding:8px"></textarea><div class="set" style="margin-top:8px"><button class="btn" data-act="bkup">Make backup</button><button class="btn" data-act="bkre">Restore backup</button></div><div class="set" style="margin-top:8px"><button class="btn" data-act="bkfile">Save backup file</button><button class="btn" data-act="bkload">Load backup file</button></div><input type="file" id="bkf" accept=".json,application/json" hidden></div>';
 
-  $('t-vault').innerHTML='<h2 style="margin-bottom:4px">Incentive Vault</h2><p class="note">Set rewards for yourself. They unlock when you hit a streak or XP target. The app cannot move money for you: when you claim a reward with an amount, put that money aside yourself.'+(fund?' Set aside so far: <b>$'+fund+'</b>':'')+'</p>'+
+  $('t-vault').innerHTML=BACK+'<h2 style="margin:10px 0 4px">Incentive Vault</h2><p class="note">Set rewards for yourself. They unlock when you hit a streak or XP target. The app cannot move money for you: when you claim a reward with an amount, put that money aside yourself.'+(fund?' Set aside so far: <b>$'+fund+'</b>':'')+'</p>'+
    (S.rewards.length?S.rewards.map(r=>{
      const p=r.claimed?r.target:rProg(r),ok=p>=r.target,pc=Math.min(100,Math.round(p/r.target*100));
      return '<div class="card rw"><div class="row"><h3>'+(r.claimed?'✅ ':ok?'🎁 ':'🔒 ')+esc(r.name)+(r.amt?' · $'+r.amt:'')+'</h3><span class="tag'+(ok?' ok':'')+'">'+(r.claimed?'Claimed':ok?'Unlocked':'Locked')+'</span><button class="x" data-rd="'+r.id+'" aria-label="Delete reward">✕</button></div>'+
@@ -626,7 +609,7 @@ function render(){
 
 document.addEventListener('click',e=>{
   const t=e.target;
-  const nb=t.closest('[data-t]');if(nb){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(['jobs','badges','proj','cal','set'].includes(nb.dataset.t)?'more':nb.dataset.t)));document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id==='t-'+nb.dataset.t));if(nb.dataset.t==='road')setTimeout(()=>{const c=$('cur');c&&c.scrollIntoView({block:'center'})},60);else window.scrollTo(0,0);return}
+  const nb=t.closest('[data-t]');if(nb){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(['jobs','badges','set','hero','vault'].includes(nb.dataset.t)?'more':nb.dataset.t)));document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id==='t-'+nb.dataset.t));if(nb.dataset.t==='road')setTimeout(()=>{const c=$('cur');c&&c.scrollIntoView&&c.scrollIntoView({block:'center'})},60);else window.scrollTo(0,0);return}
   const as=t.closest('[data-as]');if(as){const a=S.apps.find(x=>x.id===as.dataset.as);if(a){a.status=ASTAT[(ASTAT.indexOf(a.status)+1)%4];save();render()}return}
   const da=t.closest('[data-da]');if(da){const a=S.apps.find(x=>x.id===da.dataset.da);ask('Delete this application?',a?a.co:'','Delete',()=>removeApp(da.dataset.da));return}
   const gw=t.closest('[data-gw]');if(gw){const w=parseInt(gw.dataset.gw,10);if(w!==S.jobGoal.weeks){S.jobGoal.weeks=w;S.jobGoal.anchor=wkKeys(0)[0];S.jobGoal.settled=null;settleApps();save();render()}return}
