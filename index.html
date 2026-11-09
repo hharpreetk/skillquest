@@ -156,6 +156,12 @@ nav button.on{background:var(--brand);color:#fff}
 #undo{position:fixed;left:14px;max-width:calc(100vw - 100px);bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateY(20px);background:var(--ink);color:var(--bg);padding:6px 6px 6px 16px;border-radius:99px;font-weight:800;opacity:0;pointer-events:none;transition:.3s;z-index:21;display:flex;gap:10px;align-items:center}
 #undo.s{opacity:1;pointer-events:auto;transform:none}
 #undo button{background:var(--yellow);color:#3a2a00;border:0;border-radius:99px;padding:6px 14px;font-weight:800;min-height:36px}
+.sk{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.ghost{position:fixed;pointer-events:none;transform:translate(-50%,-50%);z-index:50;opacity:.92;box-shadow:0 6px 0 rgba(0,0,0,.25)}
+.jobdrop{outline:3px dashed var(--yellow);outline-offset:2px}
+.tray{position:sticky;top:calc(var(--hdr,200px) + env(safe-area-inset-top,0px) + 6px);z-index:4;background:var(--bg);padding:6px 0 2px;margin-bottom:6px}
+.srow{display:flex;align-items:center;gap:8px;margin:6px 0}.srow .sn{flex:0 0 34%;font-weight:800;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.srow .bar{flex:1;height:12px}
+.drophint{border:2px dashed var(--line);border-radius:14px;padding:14px;text-align:center;color:var(--mute)}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -179,6 +185,7 @@ nav button.on{background:var(--brand);color:#fff}
   <section class="tab" id="t-vault"></section>
   <section class="tab" id="t-more"></section>
   <section class="tab" id="t-jobs"></section>
+  <section class="tab" id="t-apps"></section>
   <section class="tab" id="t-proj"></section>
   <section class="tab" id="t-cal"></section>
   <section class="tab" id="t-set"></section>
@@ -208,12 +215,6 @@ nav button.on{background:var(--brand);color:#fff}
 
 <script>
 const KEY='skillquest_v1';
-const DEFTRACKS=[
- {id:'excel',name:'Excel',em:'📗',c:'#26890c'},
- {id:'sql',name:'SQL',em:'🗄️',c:'#1368ce'},
- {id:'pbi',name:'Power BI',em:'📊',c:'#c98a00'},
- {id:'python',name:'Python',em:'🐍',c:'#864cbf'},
- {id:'r',name:'R',em:'📈',c:'#e21b3c'}];
 const XP=50;
 const thr=L=>(L-1)*200+25*(L-1)*(L-2),need=L=>200+50*(L-1),MAXL=50;
 const lvlOf=x=>{let L=1;while(L<MAXL&&x>=thr(L+1))L++;return L};
@@ -244,9 +245,8 @@ const stage=()=>[...STAGES].reverse().find(x=>lvl()>=x.l);
 const cnt=(s,k)=>s.counts[k]||0, tot=s=>Object.values(s.counts).reduce((a,b)=>a+b,0);
 
 let S=load();
-function fresh(){return{apps:[],jobGoal:{n:10,weeks:1,anchor:null,settled:null},appMiss:0,chat:{partners:[{id:'maya',name:'Maya',vibe:'warm, upbeat best friend who genuinely believes in the user, celebrates small wins and nudges gently'},{id:'dev',name:'Quinn',vibe:'straight-talking older-brother coach with dry humor, high standards, calls out excuses kindly'}],msgs:{maya:[],dev:[]},unread:{maya:0,dev:0},active:'maya',focus:'',focusAt:0,last:0,lastOpen:0,next:0},stake:{mode:'serious',usd:0},owed:0,misses:0,pw:null,nag:null,projects:[],jobs:[],gone:[],tracks:DEFTRACKS.map(t=>({...t})),equip:{head:null,face:null,side:null,bg:'sun'},xp:0,streak:0,best:0,last:null,prev:null,offset:0,done:{},counts:{},badges:{},
- tasks:[{id:'t1',tr:'excel',text:'Practice 5 formulas (XLOOKUP, SUMIFS)'},{id:'t2',tr:'sql',text:'Solve 1 JOIN exercise'},
-  {id:'t3',tr:'pbi',text:'Build 1 visual in a report'},{id:'t4',tr:'python',text:'Clean a dataset with pandas'},{id:'t5',tr:'r',text:'Plot with ggplot2'}],
+function fresh(){return{apps:[],jobGoal:{n:10,weeks:1,anchor:null,settled:null},appMiss:0,chat:{partners:[{id:'maya',name:'Maya',vibe:'warm, upbeat best friend who genuinely believes in the user, celebrates small wins and nudges gently'},{id:'dev',name:'Quinn',vibe:'straight-talking older-brother coach with dry humor, high standards, calls out excuses kindly'}],msgs:{maya:[],dev:[]},unread:{maya:0,dev:0},active:'maya',focus:'',focusAt:0,last:0,lastOpen:0,next:0},stake:{mode:'serious',usd:0},owed:0,misses:0,pw:null,nag:null,projects:[],jobs:[],gone:[],tracks:[],equip:{head:null,face:null,side:null,bg:'sun'},xp:0,streak:0,best:0,last:null,prev:null,offset:0,done:{},counts:{},badges:{},
+ tasks:[],
  rewards:[{id:'r1',name:'Guilt-free break',type:'streak',target:3,claimed:false},
   {id:'r2',name:'$10 gift card fund',type:'points',target:500,claimed:false},
   {id:'r3',name:'Weekend off',type:'streak',target:7,claimed:false}]}}
@@ -299,18 +299,25 @@ let JT='',JSEL=[],TFLIP=false;
 function moreHTML(){
   const rd=S.jobs.filter(j=>j.ready).length;
   const m=(g,e,n,d)=>'<div class="card menu" data-t="'+g+'"><div class="em">'+e+'</div><div><b>'+n+'</b><div class="xp">'+d+'</div></div></div>';
-  return '<h2 style="margin-bottom:10px">More</h2>'+   m('vault','🎁','Vault',S.rewards.filter(r=>r.claimed).length+' claimed · '+S.rewards.length+' rewards')+
-   m('jobs','💼','Career Goals',S.jobs.length?S.jobs.length+' goals · '+rd+' ready':'Link skills to dream jobs')+
+  return m('jobs','💼','Job Track',S.jobs.length?S.jobs.length+' job types · '+rd+' ready':'Build a skill stack for each job')+
+   m('apps','📨','Job Applications',appsIn(periodKeys())+'/'+S.jobGoal.n+' this period')+
+   m('vault','🎁','Incentive Vault',S.rewards.filter(r=>r.claimed).length+' of '+S.rewards.length+' claimed')+
    m('badges','🏅','Badges',Object.keys(S.badges).length+' earned')+
    m('set','⚙️','Settings','Backup, restore skills, reset')
 }
 function jobsHTML(){
-  const chips=(sel,att)=>S.tracks.map(k=>'<button class="chip'+(sel(k)?' on':'')+'" '+att+'="'+k.id+'">'+k.em+' '+esc(k.name)+'</button>').join('');
-  return BACK+'<h2 style="margin:10px 0 4px">💼 Career Goals</h2>'+appsHTML()+'<p class="note">Create a job, link the skill cards it needs, and watch your readiness grow. A skill counts as mastered when you reach its mastery goal on the Today tab (or mark it done yourself).</p>'+
-   (S.jobs.length?S.jobs.map(j=>{const pc=Math.round(jPct(j)*100);return '<div class="card"><div class="ch"><h3>'+(j.ready?'🎓 ':'')+esc(j.title)+'</h3><span class="tag'+(j.ready?' ok':'')+'">'+(j.ready?'Qualified':pc+'%')+'</span><button class="x" data-dj="'+j.id+'" aria-label="Delete job">✕</button></div>'+
-    '<div class="bar lt"><i style="width:'+pc+'%;background:'+(j.ready?'var(--green)':'var(--blue)')+'"></i></div><div class="xp" style="margin-top:6px">Tap a skill to add or remove it from this job</div><div class="chips">'+
-    S.tracks.map(k=>{const l=j.skills.includes(k.id);return '<button class="chip'+(l?(kMast(k)?' on':''):' dim')+'" data-jl="'+j.id+'|'+k.id+'">'+k.em+' '+esc(k.name)+(l?(kMast(k)?' ✓':' '+Math.round(kPct(k)*100)+'%'):'')+'</button>'}).join('')+'</div></div>'}).join(''):'<div class="empty">No career goals yet. Example: Data Analyst needs Excel, SQL and Power BI.</div>')+
-   '<div class="card"><h3 style="margin-bottom:8px">New career goal</h3><input id="jn" maxlength="40" placeholder="e.g. Data Analyst" value="'+esc(JT)+'"><div class="xp" style="margin-top:8px">Skills required:</div><div class="chips">'+(S.tracks.length?chips(k=>JSEL.includes(k.id),'data-js'):'<span class="xp">Add a skill card first.</span>')+'</div><button class="btn" style="width:100%" data-act="addjob">Add career goal</button></div>'
+  const lbl=p=>p>=100?'Job ready 🎓':p>=75?'Almost job-ready':p>=50?'Getting there':p>=25?'Building momentum':'Just starting';
+  const tray='<div class="tray"><div class="xp">Your skills'+(S.jobs.length?' · drag one onto a job':'')+'</div><div class="chips">'+(S.tracks.length?S.tracks.map(k=>'<div class="chip sk" data-drag="'+k.id+'">'+k.em+' '+esc(k.name)+'</div>').join(''):'<span class="xp">None yet. Add your first skill below.</span>')+'</div></div><div class="add" style="margin-bottom:12px"><input id="nsk" maxlength="20" placeholder="New skill, e.g. SQL"><button class="btn" data-act="addsk">Add skill</button></div>';
+  const jobs=S.jobs.map(j=>{const ks=jKs(j),pc=Math.round(jPct(j)*100),m=ks.filter(kMast).length,un=S.tracks.filter(k=>!j.skills.includes(k.id));
+    return '<div class="card" data-jobdrop="'+j.id+'"><div class="ch"><h3>'+(j.ready?'🎓 ':'')+esc(j.title)+'</h3><span class="tag'+(j.ready?' ok':'')+'">'+pc+'%</span><button class="x" data-dj="'+j.id+'" aria-label="Delete job">✕</button></div>'+
+     '<div class="bar lt"><i style="width:'+pc+'%;background:'+(j.ready?'var(--green)':'var(--blue)')+'"></i></div>'+
+     '<div class="xp" style="margin:6px 0 8px">Readiness: '+lbl(pc)+(ks.length?' · '+m+' of '+ks.length+' skills mastered':'')+'</div>'+
+     (ks.length?'<div class="xp" style="font-weight:800">Skill stack</div>'+ks.map(k=>{const p=Math.round(kPct(k)*100);return '<div class="srow"><span class="sn">'+k.em+' '+esc(k.name)+'</span><div class="bar lt"><i style="width:'+p+'%;background:'+k.c+'"></i></div><span class="xp">'+(kMast(k)?'✓':p+'%')+'</span>'+(S.tracks.includes(k)?'<button class="x" data-jl="'+j.id+'|'+k.id+'" aria-label="Remove skill from job">✕</button>':'')+'</div>'}).join(''):'<div class="drophint">Drag skills here to build the stack</div>')+
+     (un.length?'<div class="xp" style="margin-top:8px">Tap to add:</div><div class="chips">'+un.map(k=>'<button class="chip dim" data-jl="'+j.id+'|'+k.id+'">＋ '+k.em+' '+esc(k.name)+'</button>').join('')+'</div>':'')+
+     '<div class="xp" style="margin-top:8px">📨 '+S.apps.filter(a=>a.job===j.id).length+' applications for this job type</div><div class="add" style="margin-top:8px"><input id="ns-'+j.id+'" maxlength="20" placeholder="New skill for this job"><button class="btn" data-ns="'+j.id+'">Add</button></div></div>'}).join('');
+  return BACK+'<h2 style="margin:10px 0 4px">💼 Job Track</h2><p class="note">Create a job type, then build its skill stack by dragging skills from your tray, or by tapping. Progress updates as each skill is completed, and a job is ready when every skill in its stack is mastered. Log applications on the Job Applications page.</p>'+tray+
+   (S.jobs.length?jobs:'<div class="empty">No job types yet. Example: Data Analyst (SQL + Excel + Power BI).</div>')+
+   '<div class="card"><h3 style="margin-bottom:8px">New job type</h3><input id="jn" maxlength="40" placeholder="e.g. Data Analyst" value="'+esc(JT)+'"><button class="btn" style="width:100%;margin-top:8px" data-act="addjob">Add job type</button></div>'
 }
 function addJob(){const t=$('jn').value.trim();if(!t){toast('Give the job a title');return}S.jobs.push({id:'j'+Date.now(),title:t.slice(0,40),skills:[...JSEL],ready:false});JT='';JSEL=[];sync();save();render();showPop()}
 let ASKFN;
@@ -319,7 +326,7 @@ function askYes(){$('ask').classList.remove('on');const f=ASKFN;ASKFN=null;f&&f(
 function askNo(){$('ask').classList.remove('on');ASKFN=null}
 const PXP=200,PEN={off:0,gentle:0,serious:300,hardcore:1000};
 const fmt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-function go(t){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(['jobs','badges','set','hero','vault'].includes(t)?'more':t)));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='t-'+t));window.scrollTo(0,0)}
+function go(t){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(['jobs','apps','badges','set','hero','vault'].includes(t)?'more':t)));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='t-'+t));window.scrollTo(0,0)}
 function saveUsd(){S.stake.usd=Math.max(0,parseFloat($('su').value)||0);save();render();toast('Penalty saved')}
 function stakesHTML(){
   const m=[['off','Off'],['gentle','Reminders only'],['serious','−300 XP'],['hardcore','−1000 XP + streak reset']];
@@ -396,8 +403,8 @@ function ctx(){const dn=S.done[key(0)]||{},left=7-(new Date(Date.now()+S.offset*
   return{time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),level:lvl(),character:stage().n,xp:S.xp,streak:S.streak,bestStreak:S.best,activeDaysLast7:act,
    tasksToday:S.tasks.map(t=>({skill:(S.tracks.find(k=>k.id===t.tr)||{}).name,task:t.text,done:!!dn[t.id]})),
    projectThisWeek:{shipped:shipped(wkKeys(0))>0,daysLeftInWeek:left,inProgress:S.projects.filter(p=>p.status==='building').map(p=>({title:p.title,due:p.due||null}))},
-   weeklyStakes:S.stake.mode,missedWeeks:S.misses,careerGoals:S.jobs.map(j=>({title:j.title,percent:Math.round(jPct(j)*100)})),
-   jobSearch:{applicationsThisPeriod:appsIn(periodKeys()),target:S.jobGoal.n,periodWeeks:S.jobGoal.weeks,daysLeftInPeriod:periodLeft(),recent:S.apps.slice(-8).map(a=>({company:a.co,role:a.role,status:a.status,date:a.date})),byStatus:ASTAT.reduce((o,k)=>(o[k]=S.apps.filter(a=>a.status===k).length,o),{})},workingOnNow:S.chat.focus?{text:S.chat.focus,minutesAgo:Math.round((Date.now()-S.chat.focusAt)/60000)}:null}}
+   weeklyStakes:S.stake.mode,missedWeeks:S.misses,jobTrack:S.jobs.map(j=>({jobType:j.title,readinessPercent:Math.round(jPct(j)*100),skillStack:jKs(j).map(k=>({skill:k.name,percent:Math.round(kPct(k)*100)})),applications:S.apps.filter(a=>a.job===j.id).length})),
+   jobSearch:{applicationsThisPeriod:appsIn(periodKeys()),target:S.jobGoal.n,periodWeeks:S.jobGoal.weeks,daysLeftInPeriod:periodLeft(),recent:S.apps.slice(-8).map(a=>({company:a.co,role:a.role,jobType:(S.jobs.find(x=>x.id===a.job)||{}).title,status:a.status,date:a.date})),byStatus:ASTAT.reduce((o,k)=>(o[k]=S.apps.filter(a=>a.status===k).length,o),{})},workingOnNow:S.chat.focus?{text:S.chat.focus,minutesAgo:Math.round((Date.now()-S.chat.focusAt)/60000)}:null}}
 const sysPrompt=P=>'You are '+P.name+', a close friend acting as the user\'s accountability partner inside their habit tracker app. You are an AI character; if the user sincerely asks whether you are human, say plainly that you are an AI. Style: texting a friend. One to three short sentences, casual, no lists, no markdown, at most one emoji and only sometimes. Use the app snapshot to be specific (real task names, streak, project deadline) without reciting numbers like a report. Ask at most one question. Their goals: learn Excel, SQL, Power BI, Python and R, ship one portfolio project every week, apply to jobs on a schedule, and become job-ready. You can ask about the job search and specific applications. Hold them accountable kindly: do not flatter slacking, be honest but warm about gaps, and celebrate real wins. Never invent progress that is not in the snapshot. If they seem overwhelmed or genuinely distressed, drop the coaching tone and be supportive. Your personality: '+P.vibe;
 const norm=l=>{const o=[];l.forEach(m=>{const r=o[o.length-1];if(r&&r.role===m.role)r.content+='\n'+m.content;else o.push({role:m.role,content:m.content})});if(!o.length||o[0].role!=='user')o.unshift({role:'user',content:'(chat opened)'});return o};
 const hist=pid=>S.chat.msgs[pid].filter(m=>m.r!=='sys').slice(-24).map(m=>({role:m.r==='me'?'user':'assistant',content:m.t}));
@@ -451,7 +458,7 @@ let UT,UFN;
 function showUndo(m,fn){UFN=fn;const u=$('undo');u.innerHTML=esc(m)+' <button data-act="undo">Undo</button>';u.classList.add('s');clearTimeout(UT);UT=setTimeout(()=>u.classList.remove('s'),5000)}
 function doUndo(){const f=UFN;UFN=null;$('undo').classList.remove('s');f&&f()}
 const ASTAT=['applied','interview','offer','rejected'],ASL={applied:'📨 Applied',interview:'🗣️ Interview',offer:'🎉 Offer',rejected:'❌ Rejected'};
-let EP=null;
+let EP=null,APJ=null,APC='',APR='';
 const pdate=s=>new Date(s+'T12:00:00');
 function periodStart(){const g=S.jobGoal;if(!g.anchor)g.anchor=wkKeys(0)[0];const a=pdate(g.anchor),len=7*g.weeks,idx=Math.max(0,Math.floor(Math.round((pdate(key(0))-a)/864e5)/len)),st=new Date(a);st.setDate(st.getDate()+idx*len);return fmt(st)}
 function periodKeys(){const st=pdate(periodStart()),k=[];for(let i=0;i<7*S.jobGoal.weeks;i++){const d=new Date(st);d.setDate(d.getDate()+i);k.push(fmt(d))}return k}
@@ -467,19 +474,24 @@ function settleApps(){const g=S.jobGoal,cur=periodStart();if(!g.settled){g.settl
     POP.push({k:'APPLICATIONS MISSED',em:'📉',t:'Application goal missed',sub:(lose?'-'+lose+' XP. ':'')+(usd?'You owe $'+usd+' to your penalty jar. ':'')+(S.stake.mode==='hardcore'?'Streak reset. ':'')+'New period, new chance. Send those applications.'})}
   save()}
 function addApp(quick){const co=quick?'Application':$('ac').value.trim();if(!co){toast('Add a company or role first');return}
-  const a={id:'a'+Date.now(),co:co.slice(0,50),role:quick?'':$('ar').value.trim().slice(0,50),date:key(0),status:'applied'};S.apps.push(a);const n=appsIn(periodKeys());
-  checkAppBonus();
-  sync();save();render();showUndo('Application logged',()=>removeApp(a.id));toast('📨 Application '+n+'/'+S.jobGoal.n);
-  ping('app','logged job application #'+n+' of '+S.jobGoal.n+' this period ('+a.co+(a.role?', '+a.role:'')+').',{force:true});showPop()}
+  const a={id:'a'+Date.now(),co:co.slice(0,50),role:quick?'':$('ar').value.trim().slice(0,50),date:key(0),status:'applied',job:APJ};S.apps.push(a);const n=appsIn(periodKeys());
+  if(!quick){APC='';APR=''}
+  checkAppBonus();sync();save();render();showUndo('Application logged',()=>removeApp(a.id));toast('📨 Application '+n+'/'+S.jobGoal.n);
+  const jt=S.jobs.find(x=>x.id===a.job);
+  ping('app','logged job application #'+n+' of '+S.jobGoal.n+' this period ('+a.co+(a.role?', '+a.role:'')+(jt?', for the '+jt.title+' job type':'')+').',{force:true});showPop()}
+function trackBanner(){const js=S.jobs.slice().sort((a,b)=>jPct(b)-jPct(a)),j=js.find(x=>!x.ready)||js[0];
+  return '<div class="card menu" data-t="jobs" style="padding:10px 14px"><div class="em" style="font-size:1.6rem">'+(j&&j.ready?'🎓':'💼')+'</div><div><b style="font-size:1rem">'+(j?'Job track: '+esc(j.title)+' · '+Math.round(jPct(j)*100)+'%':'Job track: add your first job type')+'</b></div></div>'}
 function appBanner(){const g=S.jobGoal,n=appsIn(periodKeys()),left=periodLeft(),ok=n>=g.n;
-  return '<div class="card menu" data-t="jobs" style="padding:10px 14px;'+(!ok&&left<=2?'border-color:var(--red)':'')+'"><div class="em" style="font-size:1.6rem">'+(ok?'✅':left<=2?'🚨':'📨')+'</div><div><b style="font-size:1rem">'+(ok?'Applications done: '+n+'/'+g.n:'Apply: '+n+'/'+g.n+' · '+left+' day'+(left>1?'s':'')+' left')+'</b></div></div>'}
+  return '<div class="card menu" data-t="apps" style="padding:10px 14px;'+(!ok&&left<=2?'border-color:var(--red)':'')+'"><div class="em" style="font-size:1.6rem">'+(ok?'✅':left<=2?'🚨':'📨')+'</div><div><b style="font-size:1rem">'+(ok?'Applications done: '+n+'/'+g.n:'Apply: '+n+'/'+g.n+' · '+left+' day'+(left>1?'s':'')+' left')+'</b></div></div>'}
 function appsHTML(){
-  const g=S.jobGoal,ks=periodKeys(),list=S.apps.filter(a=>ks.includes(a.date)),n=list.length,left=periodLeft(),ok=n>=g.n,pen=PEN[S.stake.mode]||0;
+  const g=S.jobGoal,ks=periodKeys(),list=S.apps.filter(a=>ks.includes(a.date)),n=list.length,left=periodLeft(),ok=n>=g.n,pen=PEN[S.stake.mode]||0,jt=id=>S.jobs.find(x=>x.id===id);
   let dots='';for(let i=0;i<Math.max(g.n,n);i++)dots+='<i style="display:inline-block;width:18px;height:18px;border-radius:50%;margin:2px;background:'+(i<n?'var(--green)':'var(--line)')+'"></i>';
-  return '<div class="card"><div class="ch"><h3>📨 Job applications</h3><span class="tag'+(ok?' ok':'')+'">'+n+'/'+g.n+'</span></div><div>'+dots+'</div>'+
+  return '<div class="card"><div class="ch"><h3>This period</h3><span class="tag'+(ok?' ok':'')+'">'+n+'/'+g.n+'</span></div><div>'+dots+'</div>'+
    '<div class="xp" style="margin:6px 0">'+(ok?'Goal reached for this period. Nice.':left+' day'+(left>1?'s':'')+' left'+(pen?' · miss it and lose '+pen+' XP':'')+' · +'+AXP+' XP bonus for hitting it')+'</div>'+
-   '<div class="add"><input id="ac" maxlength="50" placeholder="Company"><input id="ar" maxlength="50" placeholder="Role (optional)"></div><div class="set" style="margin-top:8px"><button class="btn" data-act="addapp">Log application</button><button class="btn" data-act="appq">+1 quick</button></div>'+
-   (list.length?'<div style="margin-top:10px">'+list.slice().reverse().map(a=>'<div class="task" style="min-height:48px;cursor:default"><div class="t">'+esc(a.co)+(a.role?' · '+esc(a.role):'')+'<div class="xp">'+a.date+'</div></div><button class="chip" data-as="'+a.id+'">'+ASL[a.status]+'</button><button class="x" data-da="'+a.id+'" aria-label="Delete application">✕</button></div>').join('')+'</div>':'')+
+   '<div class="xp" style="margin-top:6px">Job type for the next application:</div><div class="chips">'+(S.jobs.length?S.jobs.map(j=>'<button class="chip'+(APJ===j.id?' on':'')+'" data-aj="'+j.id+'">'+esc(j.title)+'</button>').join(''):'<span class="xp">Add a job type in Job Track to tag your applications.</span>')+'</div>'+
+   '<div class="add"><input id="ac" maxlength="50" placeholder="Company" value="'+esc(APC)+'"><input id="ar" maxlength="50" placeholder="Role (optional)" value="'+esc(APR)+'"></div><div class="set" style="margin-top:8px"><button class="btn" data-act="addapp">Log application</button><button class="btn" data-act="appq">+1 quick</button></div>'+
+   (list.length?'<div style="margin-top:10px">'+list.slice().reverse().map(a=>'<div class="task" style="min-height:48px;cursor:default"><div class="t">'+esc(a.co)+(a.role?' · '+esc(a.role):'')+'<div class="xp">'+a.date+(a.job&&jt(a.job)?' · '+esc(jt(a.job).title):'')+'</div></div><button class="chip" data-as="'+a.id+'">'+ASL[a.status]+'</button><button class="x" data-da="'+a.id+'" aria-label="Delete application">✕</button></div>').join('')+'</div>':'')+
+   (S.jobs.length?'<div class="xp" style="margin-top:8px">All time by job type: '+S.jobs.map(j=>esc(j.title)+' '+S.apps.filter(a=>a.job===j.id).length).join(' · ')+'</div>':'')+
    '<div class="xp" style="margin-top:8px">Goal: <input id="gn" type="number" min="1" value="'+g.n+'" style="width:64px;min-height:36px;display:inline-block;flex:none"> applications every</div><div class="chips"><button class="chip'+(g.weeks===1?' on':'')+'" data-gw="1">1 week</button><button class="chip'+(g.weeks===2?' on':'')+'" data-gw="2">2 weeks</button></div></div>'
 }
 function projEditHTML(p){
@@ -500,8 +512,29 @@ function nag(){
   else if(left>=3){t='⏳ '+left+' days left';m='Still to do: '+what+'. Distractions are loud; your future job is quiet.'}
   else if(left===2){t='🚨 2 days left';m='Future you wants this done: '+what+'.'}
   else{t='🔥 Last day';m='Before midnight: '+what+'. Smaller is fine, nothing is not.'}
-  S.nag=key(0);save();ask(t,m+(pen?' Miss it and lose '+pen+' XP.':''),'Open',()=>go(needA&&!needP?'jobs':'proj'),'Later')
+  S.nag=key(0);save();ask(t,m+(pen?' Miss it and lose '+pen+' XP.':''),'Open',()=>go(needA&&!needP?'apps':'proj'),'Later')
 }
+const PAL=['#26890c','#1368ce','#c98a00','#864cbf','#e21b3c','#ff6b00','#0097a7'];
+function createSkill(n,jobId){n=(n||'').trim();if(!n){toast('Name the skill first');return}
+  const k={id:'k'+Date.now(),name:n.slice(0,20),em:'🎯',c:PAL[S.tracks.length%PAL.length],custom:true};S.tracks.push(k);
+  if(jobId){const j=S.jobs.find(x=>x.id===jobId);if(j)j.skills.push(k.id)}
+  sync();save();render();toast('Skill added: '+k.name)}
+function linkSkill(jid,kid){const j=S.jobs.find(x=>x.id===jid),k=S.tracks.find(x=>x.id===kid);if(!j||!k)return;
+  if(j.skills.includes(kid)){toast(k.name+' is already in '+j.title);return}
+  j.skills.push(kid);sync();save();render();toast('Added '+k.name+' to '+j.title);showPop()}
+function setHdr(){const h=document.querySelector('header');if(h)document.documentElement.style.setProperty('--hdr',h.offsetHeight+'px')}
+addEventListener('resize',setHdr);
+let DRAG=null;
+const dropAt=(x,y)=>{const t=document.elementFromPoint&&document.elementFromPoint(x,y);return t&&t.closest('[data-jobdrop]')};
+const clearDrop=()=>document.querySelectorAll('.jobdrop').forEach(x=>x.classList.remove('jobdrop'));
+document.addEventListener('pointerdown',e=>{const c=e.target.closest&&e.target.closest('[data-drag]');if(!c)return;DRAG={id:c.dataset.drag,el:c,sx:e.clientX,sy:e.clientY,moved:false,ghost:null};try{c.setPointerCapture(e.pointerId)}catch(x){}});
+document.addEventListener('pointermove',e=>{const d=DRAG;if(!d)return;if(!d.moved&&Math.hypot(e.clientX-d.sx,e.clientY-d.sy)<8)return;
+  if(!d.ghost){d.moved=true;d.ghost=d.el.cloneNode(true);d.ghost.classList.add('ghost');document.body.appendChild(d.ghost)}
+  d.ghost.style.left=e.clientX+'px';d.ghost.style.top=e.clientY+'px';clearDrop();const j=dropAt(e.clientX,e.clientY);if(j)j.classList.add('jobdrop')});
+function endDrag(e,drop){const d=DRAG;if(!d)return;DRAG=null;if(d.ghost)d.ghost.remove();clearDrop();if(drop&&d.moved){const j=dropAt(e.clientX,e.clientY);if(j)linkSkill(j.dataset.jobdrop,d.id)}}
+document.addEventListener('pointerup',e=>endDrag(e,true));
+document.addEventListener('pointercancel',e=>endDrag(e,false));
+document.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const i=e.target.id||'';if(i==='nsk')createSkill(e.target.value);else if(i.startsWith('ns-'))createSkill(e.target.value,i.slice(3))});
 function sync(relock){
   const nb={},m=[],BD=getBadges(S);
   BD.forEach(b=>{if(b.t(S)){nb[b.id]=S.badges[b.id]||key(0);if(!S.badges[b.id])POP.push({k:'BADGE UNLOCKED',em:b.em,t:b.n,sub:b.d})}});
@@ -570,7 +603,7 @@ function render(){
   const w=weekStats(),d=key(0),dn=S.done[d]||{},BD=getBadges(S);
   $('sXp').textContent=S.xp.toLocaleString();$('sSt').textContent=S.streak;
   $('sBd').textContent=Object.keys(S.badges).length+'/'+BD.length;
-  $('wkPct').textContent=w.pct+'%';$('snd').textContent=S.mute?'🔇':'🔊';
+  $('wkPct').textContent=w.pct+'%';setHdr();$('snd').textContent=S.mute?'🔇':'🔊';
   const er=BD.filter(b=>S.badges[b.id]).sort((a,b)=>S.badges[b.id]<S.badges[a.id]?-1:S.badges[b.id]>S.badges[a.id]?1:0);
   $('strip').innerHTML=er.length?er.map(b=>'<span title="'+esc(b.n)+'">'+b.em+'</span>').join(''):'<em>Earn your first badge 🏅</em>';
   const fund=S.rewards.filter(r=>r.claimed).reduce((a,r)=>a+(r.amt||0),0);
@@ -580,7 +613,8 @@ function render(){
   $('lvl').textContent=stage().e+' Lv '+lvl();
 
   $('t-today').innerHTML=
-   banner+appBanner()+'<p class="note">Check off a task to earn +'+XP+' XP. Do at least one task every day to keep your streak alive.</p>'+
+   banner+appBanner()+trackBanner()+'<p class="note">Check off a task to earn +'+XP+' XP. Do at least one task every day to keep your streak alive.</p>'+
+   (S.tracks.length?'':'<div class="card" style="text-align:center"><div style="font-size:2.4rem">🎯</div><h3>Start with your first skill</h3><p class="note">Add a skill card below, or create a career goal and add skills to it. Nothing is pre-filled, so it is all yours.</p><button class="btn" data-t="jobs">Go to Job Track</button></div>')+
    S.tracks.map(k=>{
      const ts=S.tasks.filter(t=>t.tr===k.id),dd=ts.filter(t=>dn[t.id]).length,wt=w.by[k.id];
      return '<div class="card" style="--c:'+k.c+'"><div class="ch"><div class="ic" style="background:'+k.c+'">'+k.em+'</div>'+
@@ -590,7 +624,7 @@ function render(){
       (ts.length?ts.map(t=>'<div class="task'+(dn[t.id]?' d':'')+'"><div class="bx" data-tg="'+t.id+'" role="checkbox" aria-checked="'+!!dn[t.id]+'" aria-label="Complete task" tabindex="0">'+(dn[t.id]?'✓':'')+'</div><div class="t">'+esc(t.text)+'</div><button class="x" data-del="'+t.id+'" aria-label="Delete task">✕</button></div>').join(''):'<div class="empty">No tasks yet. Add your first goal below.</div>')+
       '<div class="add"><input id="in-'+k.id+'" maxlength="80" placeholder="New '+k.name+' task"><button class="btn" data-add="'+k.id+'">Add</button></div></div>'
    }).join('')+'<div class="card"><h3 style="margin-bottom:8px">➕ Add your own skill</h3><div class="add"><input id="nsE" maxlength="2" value="⭐" style="flex:0 0 64px;text-align:center;font-size:1.3rem" aria-label="Emoji"><input id="nsN" maxlength="20" placeholder="e.g. Tableau"><input id="nsC" type="color" value="#ff6b00" style="flex:0 0 56px;padding:2px" aria-label="Color"></div><button class="btn" style="width:100%;margin-top:8px" data-act="addskill">Create skill card</button></div>';
-  $('t-road').innerHTML=roadHTML();$('t-more').innerHTML=moreHTML();$('t-jobs').innerHTML=jobsHTML();$('t-proj').innerHTML=projHTML();$('t-cal').innerHTML=calHTML();
+  $('t-road').innerHTML=roadHTML();$('t-more').innerHTML=moreHTML();$('t-jobs').innerHTML=jobsHTML();$('t-apps').innerHTML=BACK+'<h2 style="margin:10px 0">📨 Job Applications</h2>'+appsHTML();$('t-proj').innerHTML=projHTML();$('t-cal').innerHTML=calHTML();
 
   $('t-badges').innerHTML=BACK+'<h2 style="margin:10px 0">Badges &amp; Achievements</h2><div class="grid">'+
    BD.map(b=>{const u=S.badges[b.id];return '<div class="card badge'+(u?'':' lock')+'"><div class="em">'+(u?b.em:'🔒')+'</div><b>'+b.n+'</b><small>'+(u?'Unlocked':b.d)+'</small></div>'}).join('')+'</div>';
@@ -609,7 +643,9 @@ function render(){
 
 document.addEventListener('click',e=>{
   const t=e.target;
-  const nb=t.closest('[data-t]');if(nb){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(['jobs','badges','set','hero','vault'].includes(nb.dataset.t)?'more':nb.dataset.t)));document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id==='t-'+nb.dataset.t));if(nb.dataset.t==='road')setTimeout(()=>{const c=$('cur');c&&c.scrollIntoView&&c.scrollIntoView({block:'center'})},60);else window.scrollTo(0,0);return}
+  const nb=t.closest('[data-t]');if(nb){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(['jobs','apps','badges','set','hero','vault'].includes(nb.dataset.t)?'more':nb.dataset.t)));document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id==='t-'+nb.dataset.t));if(nb.dataset.t==='road')setTimeout(()=>{const c=$('cur');c&&c.scrollIntoView&&c.scrollIntoView({block:'center'})},60);else window.scrollTo(0,0);return}
+  const aj=t.closest('[data-aj]');if(aj){APC=$('ac').value;APR=$('ar').value;APJ=APJ===aj.dataset.aj?null:aj.dataset.aj;render();return}
+  const ns=t.closest('[data-ns]');if(ns){createSkill($('ns-'+ns.dataset.ns).value,ns.dataset.ns);return}
   const as=t.closest('[data-as]');if(as){const a=S.apps.find(x=>x.id===as.dataset.as);if(a){a.status=ASTAT[(ASTAT.indexOf(a.status)+1)%4];save();render()}return}
   const da=t.closest('[data-da]');if(da){const a=S.apps.find(x=>x.id===da.dataset.da);ask('Delete this application?',a?a.co:'','Delete',()=>removeApp(da.dataset.da));return}
   const gw=t.closest('[data-gw]');if(gw){const w=parseInt(gw.dataset.gw,10);if(w!==S.jobGoal.weeks){S.jobGoal.weeks=w;S.jobGoal.anchor=wkKeys(0)[0];S.jobGoal.settled=null;settleApps();save();render()}return}
@@ -633,7 +669,7 @@ document.addEventListener('click',e=>{
   const ad=t.closest('[data-add]');if(ad){addTask(ad.dataset.add);return}
   const cl=t.closest('[data-cl]');if(cl){claim(cl.dataset.cl);return}
   const rd=t.closest('[data-rd]');if(rd){const r=S.rewards.find(x=>x.id===rd.dataset.rd);ask('Delete this reward?',r?r.name:'','Delete',()=>delReward(rd.dataset.rd));return}
-  const a=t.closest('[data-act]');if(a){({skip:skipDay,reset:resetAll,addr:addReward,addskill:addSkill,askyes:askYes,askno:askNo,addproj:addProj,addapp:()=>addApp(false),appq:()=>addApp(true),epsave:saveProj,epcancel:()=>{EP=null;render()},chat:openChat,chatx:closeChat,undo:doUndo,send:sendChat,cset:()=>{CSET=!CSET;if(CSET){const p=S.chat.partners.find(x=>x.id===S.chat.active);$('sn').value=p.name;$('sv').value=p.vibe;$('sk').value=lsGet('skillquest_key')||''}renderChat()},csave:saveChatSet,cclr:()=>{S.chat.msgs[S.chat.active]=[];save();renderChat()},su:saveUsd,paid:()=>{S.owed=0;save();render()},addjob:addJob,snd:()=>{S.mute=!S.mute;save();render();sfx('blip')},popok:popOk,bkup:backup,bkre:restore,bkfile:bkFile,bkload:()=>$('bkf').click()})[a.dataset.act]()}
+  const a=t.closest('[data-act]');if(a){({skip:skipDay,reset:resetAll,addr:addReward,addskill:addSkill,askyes:askYes,askno:askNo,addproj:addProj,addsk:()=>createSkill($('nsk').value),addapp:()=>addApp(false),appq:()=>addApp(true),epsave:saveProj,epcancel:()=>{EP=null;render()},chat:openChat,chatx:closeChat,undo:doUndo,send:sendChat,cset:()=>{CSET=!CSET;if(CSET){const p=S.chat.partners.find(x=>x.id===S.chat.active);$('sn').value=p.name;$('sv').value=p.vibe;$('sk').value=lsGet('skillquest_key')||''}renderChat()},csave:saveChatSet,cclr:()=>{S.chat.msgs[S.chat.active]=[];save();renderChat()},su:saveUsd,paid:()=>{S.owed=0;save();render()},addjob:addJob,snd:()=>{S.mute=!S.mute;save();render();sfx('blip')},popok:popOk,bkup:backup,bkre:restore,bkfile:bkFile,bkload:()=>$('bkf').click()})[a.dataset.act]()}
 });
 document.addEventListener('change',e=>{const g=e.target.dataset&&e.target.dataset.goal;if(!g)return;const k=S.tracks.find(x=>x.id===g);if(k){k.goal=Math.max(1,parseInt(e.target.value,10)||25);sync();save();render();showPop()}});
 document.addEventListener('keydown',e=>{
@@ -644,7 +680,7 @@ function bkFile(){const b=new Blob([JSON.stringify(S)],{type:'application/json'}
 document.addEventListener('change',e=>{const f=e.target.id==='bkf'&&e.target.files[0];if(f)f.text().then(t=>{try{const o=JSON.parse(t);if(!Array.isArray(o.tasks))throw 0;askRestore(o)}catch(x){toast('That is not a valid backup file')}})});
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
-mig();checkReset();sync();POP.length=0;settle();settleApps();save();render();showPop();if(!POP.length)nag();fab();openPing();
+mig();checkReset();sync();POP.length=0;settle();settleApps();save();render();showPop();if(!POP.length)nag();fab();setHdr();openPing();
 </script>
 </body>
 </html>
